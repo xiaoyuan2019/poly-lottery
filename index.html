@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>业主抽奖平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        header {
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .user-info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 10px;
+            border-radius: 15px;
+        }
+        
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 15px;
+            cursor: pointer;
+            margin-left: 10px;
+            font-size: 12px;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #f1f1f1;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            color: #666;
+        }
+        
+        .tab.active {
+            background: white;
+            color: #4facfe;
+            border-bottom: 3px solid #4facfe;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 20px;
+            min-height: 400px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        button {
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        button.secondary {
+            background: #6c757d;
+        }
+        
+        .prize-item, .whitelist-item, .record-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #4facfe;
+        }
+        
+        .prize-header, .whitelist-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .prize-name, .whitelist-name {
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .prize-probability, .whitelist-phone {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .lottery-container {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .wheel-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto 30px;
+        }
+        
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(
+                #ff9a9e, #fad0c4, #fad0c4, #a1c4fd, 
+                #c2e9fb, #c2e9fb, #ffecd2, #ffecd2,
+                #ff9a9e
+            );
+            position: relative;
+            transition: transform 3s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .wheel-pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            background: #ff4757;
+            clip-path: polygon(50% 100%, 0 0, 100% 0);
+            z-index: 10;
+        }
+        
+        .lottery-btn {
+            width: 200px;
+            margin: 20px auto;
+            font-size: 20px;
+            padding: 15px;
+        }
+        
+        .login-container {
+            padding: 40px 20px;
+            text-align: center;
+        }
+        
+        .login-form {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .login-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #4facfe;
+        }
+        
+        .role-selector {
+            display: flex;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #ddd;
+        }
+        
+        .role-option {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            background: #f8f9fa;
+            transition: all 0.3s;
+        }
+        
+        .role-option.active {
+            background: #4facfe;
+            color: white;
+        }
+        
+        .result-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .result-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 80%;
+            animation: pop 0.5s;
+        }
+        
+        @keyframes pop {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .result-title {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #4facfe;
+        }
+        
+        .result-prize {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ff4757;
+            margin: 20px 0;
+        }
+        
+        .share-section {
+            margin-top: 30px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .share-btn {
+            display: inline-block;
+            background: #07c160;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            margin: 10px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .data-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .data-title {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #555;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 14px;
+            border-top: 1px solid #eee;
+        }
+        
+        .admin-only {
+            display: none;
+        }
+        
+        .publish-guide {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .publish-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #555;
+        }
+        
+        .publish-method {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #4facfe;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                border-radius: 10px;
+            }
+            
+            .wheel-container {
+                width: 250px;
+                height: 250px;
+            }
+            
+            .tab {
+                padding: 12px 8px;
+                font-size: 14px;
+            }
+            
+            .user-info {
+                position: static;
+                text-align: center;
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 登录页面 -->
+        <div id="login-page" class="login-container">
+            <div class="login-form">
+                <div class="login-title">业主抽奖平台</div>
+                <p>请输入身份证号后6位登录</p>
+                
+                <div class="form-group">
+                    <div class="role-selector">
+                        <div class="role-option active" data-role="employee">普通员工</div>
+                        <div class="role-option" data-role="admin">管理员</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="id-number">身份证号后6位</label>
+                    <input type="text" id="id-number" placeholder="请输入身份证号后6位" maxlength="6">
+                </div>
+                
+                <button id="login-btn">登录</button>
+                
+                <div class="data-section" style="margin-top: 20px;">
+                    <div class="data-title">登录说明</div>
+                    <p>• 管理员：身份证后6位为 "admin" 或 "123456"</p>
+                    <p>• 普通员工：其他任意6位数字或字母</p>
+                    <p>• 普通员工只能参与抽奖</p>
+                    <p>• 管理员可以管理奖品、白名单和查看记录</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 主应用页面 -->
+        <div id="app-page" style="display: none;">
+            <header>
+                <div class="logo">业主抽奖平台</div>
+                <div class="subtitle">专为小区业主设计的抽奖活动</div>
+                <div class="user-info">
+                    <span id="user-role-display">普通员工</span>
+                    <button class="logout-btn" id="logout-btn">退出登录</button>
+                </div>
+            </header>
+            
+            <div class="tabs">
+                <div class="tab active" data-tab="lottery">抽奖</div>
+                <div class="tab admin-only" data-tab="prizes">奖品管理</div>
+                <div class="tab admin-only" data-tab="whitelist">白名单</div>
+                <div class="tab admin-only" data-tab="records">抽奖记录</div>
+                <div class="tab" data-tab="publish">发布指南</div>
+            </div>
+            
+            <!-- 抽奖标签页 -->
+            <div class="tab-content active" id="lottery">
+                <div class="lottery-container">
+                    <h2>幸运大抽奖</h2>
+                    <p>点击下方按钮开始抽奖，祝您好运！</p>
+                    
+                    <div class="wheel-container">
+                        <div class="wheel-pointer"></div>
+                        <div class="wheel" id="wheel"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="user-phone">请输入手机号：</label>
+                        <input type="tel" id="user-phone" placeholder="请输入您的手机号">
+                    </div>
+                    
+                    <button class="lottery-btn" id="start-lottery">开始抽奖</button>
+                    
+                    <div class="share-section">
+                        <p>分享给其他业主参与抽奖</p>
+                        <a href="javascript:void(0);" class="share-btn" id="share-wechat">分享到微信</a>
+                        <a href="javascript:void(0);" class="share-btn" id="copy-link">复制链接</a>
+                    </div>
+                    
+                    <div class="data-section">
+                        <div class="data-title">活动数据</div>
+                        <p>已参与人数：<span id="participant-count">0</span></p>
+                        <p>剩余奖品数量：<span id="remaining-prizes">0</span></p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 奖品管理标签页 -->
+            <div class="tab-content" id="prizes">
+                <h2>奖品管理</h2>
+                <p>添加和管理抽奖奖品</p>
+                
+                <div class="form-group">
+                    <label for="prize-name">奖品名称</label>
+                    <input type="text" id="prize-name" placeholder="例如：一等奖 iPhone 14">
+                </div>
+                
+                <div class="form-group">
+                    <label for="prize-probability">中奖概率 (%)</label>
+                    <input type="number" id="prize-probability" min="0" max="100" value="10">
+                </div>
+                
+                <div class="form-group">
+                    <label for="prize-count">奖品数量</label>
+                    <input type="number" id="prize-count" min="1" value="1">
+                </div>
+                
+                <button id="add-prize">添加奖品</button>
+                
+                <div id="prizes-list">
+                    <!-- 奖品列表将在这里动态生成 -->
+                </div>
+            </div>
+            
+            <!-- 白名单标签页 -->
+            <div class="tab-content" id="whitelist">
+                <h2>白名单管理</h2>
+                <p>只有白名单中的手机号可以参与抽奖</p>
+                
+                <div class="form-group">
+                    <label for="whitelist-phone">手机号</label>
+                    <input type="tel" id="whitelist-phone" placeholder="请输入业主手机号">
+                </div>
+                
+                <div class="form-group">
+                    <label for="whitelist-name">姓名 (可选)</label>
+                    <input type="text" id="whitelist-name" placeholder="请输入业主姓名">
+                </div>
+                
+                <button id="add-whitelist">添加到白名单</button>
+                
+                <div id="whitelist-list">
+                    <!-- 白名单列表将在这里动态生成 -->
+                </div>
+            </div>
+            
+            <!-- 抽奖记录标签页 -->
+            <div class="tab-content" id="records">
+                <h2>抽奖记录</h2>
+                <p>所有抽奖记录将在这里显示</p>
+                
+                <button id="clear-records" class="secondary">清空记录</button>
+                
+                <div id="records-list">
+                    <!-- 抽奖记录将在这里动态生成 -->
+                </div>
+            </div>
+            
+            <!-- 发布指南标签页 -->
+            <div class="tab-content" id="publish">
+                <div class="publish-guide">
+                    <div class="publish-title">本地对外发布指南</div>
+                    
+                    <div class="publish-method">
+                        <h3>方法一：使用内网穿透工具（推荐）</h3>
+                        <p><strong>步骤：</strong></p>
+                        <ol>
+                            <li>下载内网穿透工具（如 ngrok、frp、natapp 等）</li>
+                            <li>注册账号并获取免费隧道</li>
+                            <li>配置工具指向本地端口（如 8080）</li>
+                            <li>启动工具，获得公网访问地址</li>
+                            <li>将地址分享给外部用户</li>
+                        </ol>
+                        <p><strong>推荐工具：</strong></p>
+                        <ul>
+                            <li>Ngrok：https://ngrok.com/</li>
+                            <li>Sunny-Ngrok：https://www.ngrok.cc/</li>
+                            <li>Frp：https://github.com/fatedier/frp</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="publish-method">
+                        <h3>方法二：使用 Python 简单服务器</h3>
+                        <p><strong>步骤：</strong></p>
+                        <ol>
+                            <li>将本HTML文件保存为 index.html</li>
+                            <li>打开命令提示符，进入文件所在目录</li>
+                            <li>运行命令：<code>python -m http.server 8080</code></li>
+                            <li>配合内网穿透工具使用</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="publish-method">
+                        <h3>方法三：使用 Node.js 静态服务器</h3>
+                        <p><strong>步骤：</strong></p>
+                        <ol>
+                            <li>安装 Node.js</li>
+                            <li>安装 http-server：<code>npm install -g http-server</code></li>
+                            <li>进入文件目录运行：<code>http-server -p 8080</code></li>
+                            <li>配合内网穿透工具使用</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="publish-method">
+                        <h3>方法四：使用云存储服务</h3>
+                        <p><strong>步骤：</strong></p>
+                        <ol>
+                            <li>注册 GitHub Pages、Vercel 或 Netlify 账号</li>
+                            <li>上传HTML文件到平台</li>
+                            <li>获得免费域名访问地址</li>
+                            <li>注意：部分平台可能需要简单配置</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="data-section">
+                        <div class="data-title">注意事项</div>
+                        <p>• 数据存储在浏览器本地，不同用户数据独立</p>
+                        <p>• 如需统一数据管理，建议部署后端服务</p>
+                        <p>• 确保网络环境安全，避免敏感信息泄露</p>
+                    </div>
+                </div>
+            </div>
+            
+            <footer>
+                <p>© 2023 业主抽奖平台 | 带权限管理的纯前端实现</p>
+            </footer>
+        </div>
+        
+        <!-- 抽奖结果弹窗 -->
+        <div class="result-modal" id="result-modal">
+            <div class="result-content">
+                <div class="result-title">抽奖结果</div>
+                <div class="result-prize" id="result-prize">恭喜您获得一等奖！</div>
+                <p id="result-message">请妥善保管中奖信息，联系管理员兑奖</p>
+                <button id="close-modal">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 数据存储键名
+        const STORAGE_KEYS = {
+            PRIZES: 'lottery_prizes',
+            WHITELIST: 'lottery_whitelist',
+            RECORDS: 'lottery_records',
+            USER: 'current_user'
+        };
+
+        // 用户角色
+        const USER_ROLES = {
+            ADMIN: 'admin',
+            EMPLOYEE: 'employee'
+        };
+
+        // 管理员身份验证码
+        const ADMIN_CODES = ['admin', '123456'];
+
+        // 初始化数据
+        function initData() {
+            if (!localStorage.getItem(STORAGE_KEYS.PRIZES)) {
+                localStorage.setItem(STORAGE_KEYS.PRIZES, JSON.stringify([]));
+            }
+            
+            if (!localStorage.getItem(STORAGE_KEYS.WHITELIST)) {
+                localStorage.setItem(STORAGE_KEYS.WHITELIST, JSON.stringify([]));
+            }
+            
+            if (!localStorage.getItem(STORAGE_KEYS.RECORDS)) {
+                localStorage.setItem(STORAGE_KEYS.RECORDS, JSON.stringify([]));
+            }
+            
+            updateUI();
+        }
+
+        // 获取数据
+        function getData(key) {
+            return JSON.parse(localStorage.getItem(key) || '[]');
+        }
+
+        // 保存数据
+        function saveData(key, data) {
+            localStorage.setItem(key, JSON.stringify(data));
+            updateUI();
+        }
+
+        // 更新UI
+        function updateUI() {
+            updatePrizesList();
+            updateWhitelistList();
+            updateRecordsList();
+            updateStats();
+        }
+
+        // 更新奖品列表
+        function updatePrizesList() {
+            const prizes = getData(STORAGE_KEYS.PRIZES);
+            const prizesList = document.getElementById('prizes-list');
+            
+            prizesList.innerHTML = '';
+            
+            if (prizes.length === 0) {
+                prizesList.innerHTML = '<p>暂无奖品，请添加奖品</p>';
+                return;
+            }
+            
+            prizes.forEach((prize, index) => {
+                const prizeItem = document.createElement('div');
+                prizeItem.className = 'prize-item';
+                prizeItem.innerHTML = `
+                    <div class="prize-header">
+                        <div class="prize-name">${prize.name}</div>
+                        <div class="prize-probability">概率: ${prize.probability}%</div>
+                    </div>
+                    <div>数量: ${prize.count}</div>
+                    <button class="secondary remove-prize" data-index="${index}">删除</button>
+                `;
+                prizesList.appendChild(prizeItem);
+            });
+            
+            // 添加删除事件
+            document.querySelectorAll('.remove-prize').forEach(button => {
+                button.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    removePrize(index);
+                });
+            });
+        }
+
+        // 更新白名单列表
+        function updateWhitelistList() {
+            const whitelist = getData(STORAGE_KEYS.WHITELIST);
+            const whitelistList = document.getElementById('whitelist-list');
+            
+            whitelistList.innerHTML = '';
+            
+            if (whitelist.length === 0) {
+                whitelistList.innerHTML = '<p>白名单为空，请添加业主手机号</p>';
+                return;
+            }
+            
+            whitelist.forEach((item, index) => {
+                const whitelistItem = document.createElement('div');
+                whitelistItem.className = 'whitelist-item';
+                whitelistItem.innerHTML = `
+                    <div class="whitelist-header">
+                        <div class="whitelist-name">${item.name || '未命名'}</div>
+                        <div class="whitelist-phone">${item.phone}</div>
+                    </div>
+                    <button class="secondary remove-whitelist" data-index="${index}">删除</button>
+                `;
+                whitelistList.appendChild(whitelistItem);
+            });
+            
+            // 添加删除事件
+            document.querySelectorAll('.remove-whitelist').forEach(button => {
+                button.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    removeWhitelist(index);
+                });
+            });
+        }
+
+        // 更新抽奖记录列表
+        function updateRecordsList() {
+            const records = getData(STORAGE_KEYS.RECORDS);
+            const recordsList = document.getElementById('records-list');
+            
+            recordsList.innerHTML = '';
+            
+            if (records.length === 0) {
+                recordsList.innerHTML = '<p>暂无抽奖记录</p>';
+                return;
+            }
+            
+            records.forEach(record => {
+                const recordItem = document.createElement('div');
+                recordItem.className = 'record-item';
+                recordItem.innerHTML = `
+                    <div><strong>${record.phone}</strong> - ${record.prize || '未中奖'}</div>
+                    <div>时间: ${new Date(record.time).toLocaleString()}</div>
+                `;
+                recordsList.appendChild(recordItem);
+            });
+        }
+
+        // 更新统计数据
+        function updateStats() {
+            const prizes = getData(STORAGE_KEYS.PRIZES);
+            const records = getData(STORAGE_KEYS.RECORDS);
+            
+            const totalPrizes = prizes.reduce((sum, prize) => sum + prize.count, 0);
+            const wonPrizes = records.filter(record => record.prize && record.prize !== '未中奖').length;
+            const remainingPrizes = totalPrizes - wonPrizes;
+            
+            document.getElementById('participant-count').textContent = records.length;
+            document.getElementById('remaining-prizes').textContent = remainingPrizes;
+        }
+
+        // 添加奖品
+        function addPrize() {
+            const name = document.getElementById('prize-name').value.trim();
+            const probability = parseInt(document.getElementById('prize-probability').value);
+            const count = parseInt(document.getElementById('prize-count').value);
+            
+            if (!name) {
+                alert('请输入奖品名称');
+                return;
+            }
+            
+            if (probability < 0 || probability > 100) {
+                alert('概率必须在0-100之间');
+                return;
+            }
+            
+            if (count < 1) {
+                alert('奖品数量必须大于0');
+                return;
+            }
+            
+            const prizes = getData(STORAGE_KEYS.PRIZES);
+            prizes.push({ name, probability, count });
+            saveData(STORAGE_KEYS.PRIZES, prizes);
+            
+            // 清空表单
+            document.getElementById('prize-name').value = '';
+            document.getElementById('prize-probability').value = '10';
+            document.getElementById('prize-count').value = '1';
+        }
+
+        // 删除奖品
+        function removePrize(index) {
+            const prizes = getData(STORAGE_KEYS.PRIZES);
+            prizes.splice(index, 1);
+            saveData(STORAGE_KEYS.PRIZES, prizes);
+        }
+
+        // 添加白名单
+        function addWhitelist() {
+            const phone = document.getElementById('whitelist-phone').value.trim();
+            const name = document.getElementById('whitelist-name').value.trim();
+            
+            if (!phone) {
+                alert('请输入手机号');
+                return;
+            }
+            
+            // 简单的手机号验证
+            if (!/^1[3-9]\d{9}$/.test(phone)) {
+                alert('请输入有效的手机号');
+                return;
+            }
+            
+            const whitelist = getData(STORAGE_KEYS.WHITELIST);
+            
+            // 检查是否已存在
+            if (whitelist.some(item => item.phone === phone)) {
+                alert('该手机号已在白名单中');
+                return;
+            }
+            
+            whitelist.push({ phone, name: name || '业主' });
+            saveData(STORAGE_KEYS.WHITELIST, whitelist);
+            
+            // 清空表单
+            document.getElementById('whitelist-phone').value = '';
+            document.getElementById('whitelist-name').value = '';
+        }
+
+        // 删除白名单
+        function removeWhitelist(index) {
+            const whitelist = getData(STORAGE_KEYS.WHITELIST);
+            whitelist.splice(index, 1);
+            saveData(STORAGE_KEYS.WHITELIST, whitelist);
+        }
+
+        // 执行抽奖
+        function performLottery(phone) {
+            const prizes = getData(STORAGE_KEYS.PRIZES);
+            const records = getData(STORAGE_KEYS.RECORDS);
+            
+            // 检查是否已经抽过奖
+            if (records.some(record => record.phone === phone)) {
+                showResult('您已经参与过抽奖', '每个手机号只能参与一次');
+                return;
+            }
+            
+            // 检查是否有奖品
+            if (prizes.length === 0) {
+                showResult('未中奖', '暂无奖品设置');
+                records.push({
+                    phone,
+                    prize: '未中奖',
+                    time: new Date().toISOString()
+                });
+                saveData(STORAGE_KEYS.RECORDS, records);
+                return;
+            }
+            
+            // 计算总概率
+            const totalProbability = prizes.reduce((sum, prize) => sum + prize.probability, 0);
+            
+            // 生成随机数
+            const random = Math.random() * totalProbability;
+            
+            let current = 0;
+            let selectedPrize = null;
+            
+            // 根据概率选择奖品
+            for (const prize of prizes) {
+                current += prize.probability;
+                if (random <= current && prize.count > 0) {
+                    selectedPrize = prize;
+                    break;
+                }
+            }
+            
+            // 记录结果
+            if (selectedPrize) {
+                // 中奖
+                selectedPrize.count--;
+                saveData(STORAGE_KEYS.PRIZES, prizes);
+                
+                records.push({
+                    phone,
+                    prize: selectedPrize.name,
+                    time: new Date().toISOString()
+                });
+                saveData(STORAGE_KEYS.RECORDS, records);
+                
+                showResult(`恭喜您获得 ${selectedPrize.name}`, '请妥善保管中奖信息，联系管理员兑奖');
+            } else {
+                // 未中奖
+                records.push({
+                    phone,
+                    prize: '未中奖',
+                    time: new Date().toISOString()
+                });
+                saveData(STORAGE_KEYS.RECORDS, records);
+                
+                showResult('很遗憾，未中奖', '感谢您的参与，下次好运！');
+            }
+        }
+
+        // 显示抽奖结果
+        function showResult(prize, message) {
+            document.getElementById('result-prize').textContent = prize;
+            document.getElementById('result-message').textContent = message;
+            document.getElementById('result-modal').style.display = 'flex';
+        }
+
+        // 清空记录
+        function clearRecords() {
+            if (confirm('确定要清空所有抽奖记录吗？此操作不可恢复。')) {
+                saveData(STORAGE_KEYS.RECORDS, []);
+            }
+        }
+
+        // 分享功能
+        function shareToWechat() {
+            alert('请点击右上角分享到微信或朋友圈');
+        }
+
+        function copyLink() {
+            const url = window.location.href;
+            navigator.clipboard.writeText(url).then(() => {
+                alert('链接已复制到剪贴板，可以分享给好友了');
+            }).catch(() => {
+                // 兼容旧浏览器
+                const textArea = document.createElement('textarea');
+                textArea.value = url;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('链接已复制到剪贴板，可以分享给好友了');
+            });
+        }
+
+        // 转盘动画
+        function spinWheel() {
+            const wheel = document.getElementById('wheel');
+            const rotations = 5 + Math.random() * 5; // 5-10圈
+            const degree = 360 * rotations + Math.floor(Math.random() * 360);
+            
+            wheel.style.transform = `rotate(${degree}deg)`;
+            
+            // 动画结束后重置
+            setTimeout(() => {
+                wheel.style.transition = 'none';
+                wheel.style.transform = 'rotate(0deg)';
+                setTimeout(() => {
+                    wheel.style.transition = 'transform 3s cubic-bezier(0.17, 0.67, 0.83, 0.67)';
+                }, 50);
+            }, 3000);
+        }
+
+        // 用户登录
+        function login() {
+            const idNumber = document.getElementById('id-number').value.trim();
+            const selectedRole = document.querySelector('.role-option.active').getAttribute('data-role');
+            
+            if (!idNumber) {
+                alert('请输入身份证号后6位');
+                return;
+            }
+            
+            if (idNumber.length !== 6) {
+                alert('身份证号后6位必须是6位字符');
+                return;
+            }
+            
+            let userRole = USER_ROLES.EMPLOYEE;
+            
+            // 验证管理员身份
+            if (selectedRole === USER_ROLES.ADMIN) {
+                if (ADMIN_CODES.includes(idNumber.toLowerCase())) {
+                    userRole = USER_ROLES.ADMIN;
+                } else {
+                    alert('管理员身份验证失败，请检查身份证号后6位');
+                    return;
+                }
+            }
+            
+            // 保存用户信息
+            const userInfo = {
+                role: userRole,
+                loginTime: new Date().toISOString()
+            };
+            localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userInfo));
+            
+            // 切换到应用页面
+            showAppPage(userRole);
+        }
+
+        // 显示应用页面
+        function showAppPage(role) {
+            document.getElementById('login-page').style.display = 'none';
+            document.getElementById('app-page').style.display = 'block';
+            
+            // 更新用户角色显示
+            const roleDisplay = role === USER_ROLES.ADMIN ? '管理员' : '普通员工';
+            document.getElementById('user-role-display').textContent = roleDisplay;
+            
+            // 根据角色显示/隐藏管理员功能
+            const adminTabs = document.querySelectorAll('.tab.admin-only');
+            if (role === USER_ROLES.ADMIN) {
+                adminTabs.forEach(tab => tab.style.display = 'flex');
+            } else {
+                adminTabs.forEach(tab => tab.style.display = 'none');
+            }
+            
+            initData();
+        }
+
+        // 用户退出登录
+        function logout() {
+            localStorage.removeItem(STORAGE_KEYS.USER);
+            document.getElementById('app-page').style.display = 'none';
+            document.getElementById('login-page').style.display = 'block';
+            document.getElementById('id-number').value = '';
+        }
+
+        // 检查用户是否已登录
+        function checkLoginStatus() {
+            const userInfo = localStorage.getItem(STORAGE_KEYS.USER);
+            if (userInfo) {
+                const user = JSON.parse(userInfo);
+                showAppPage(user.role);
+            }
+        }
+
+        // 切换标签页
+        function switchTab(tabName) {
+            // 隐藏所有标签内容
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // 显示选中的标签内容
+            document.getElementById(tabName).classList.add('active');
+            
+            // 更新标签状态
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 激活当前标签
+            document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add('active');
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查登录状态
+            checkLoginStatus();
+            
+            // 角色选择
+            document.querySelectorAll('.role-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.role-option').forEach(o => o.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+            
+            // 登录按钮
+            document.getElementById('login-btn').addEventListener('click', login);
+            
+            // 退出登录按钮
+            document.getElementById('logout-btn').addEventListener('click', logout);
+            
+            // 标签切换 - 修复后的代码
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-tab');
+                    switchTab(tabName);
+                });
+            });
+            
+            // 添加奖品
+            document.getElementById('add-prize').addEventListener('click', addPrize);
+            
+            // 添加白名单
+            document.getElementById('add-whitelist').addEventListener('click', addWhitelist);
+            
+            // 开始抽奖
+            document.getElementById('start-lottery').addEventListener('click', function() {
+                const phone = document.getElementById('user-phone').value.trim();
+                
+                if (!phone) {
+                    alert('请输入手机号');
+                    return;
+                }
+                
+                // 检查白名单
+                const whitelist = getData(STORAGE_KEYS.WHITELIST);
+                if (whitelist.length > 0 && !whitelist.some(item => item.phone === phone)) {
+                    alert('您的手机号不在白名单中，无法参与抽奖');
+                    return;
+                }
+                
+                // 执行抽奖
+                spinWheel();
+                setTimeout(() => {
+                    performLottery(phone);
+                }, 3000);
+            });
+            
+            // 清空记录
+            document.getElementById('clear-records').addEventListener('click', clearRecords);
+            
+            // 分享功能
+            document.getElementById('share-wechat').addEventListener('click', shareToWechat);
+            document.getElementById('copy-link').addEventListener('click', copyLink);
+            
+            // 关闭弹窗
+            document.getElementById('close-modal').addEventListener('click', function() {
+                document.getElementById('result-modal').style.display = 'none';
+            });
+        });
+    </script>
+</body>
+</html>
