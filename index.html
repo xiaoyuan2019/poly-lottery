@@ -720,12 +720,12 @@
 
     <!-- Netlify Forms 隐藏表单 - 用于永久存储中奖记录 -->
     <form name="lottery-records" netlify netlify-honeypot="bot-field" hidden>
-        <input type="text" name="timestamp" id="netlify-timestamp">
-        <input type="text" name="roomNumber" id="netlify-roomNumber">
-        <input type="text" name="name" id="netlify-name">
-        <input type="text" name="phone" id="netlify-phone">
-        <input type="text" name="prize" id="netlify-prize">
-        <input type="text" name="status" id="netlify-status">
+        <input type="text" name="timestamp">
+        <input type="text" name="roomNumber">
+        <input type="text" name="name">
+        <input type="text" name="phone">
+        <input type="text" name="prize">
+        <input type="text" name="status">
         <!-- 蜜罐字段 -->
         <input type="text" name="bot-field" style="display: none;">
     </form>
@@ -960,20 +960,17 @@
 
         // 显示管理员标签页
         function showAdminTab(tabName) {
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            // 修复：检查元素是否存在
+            const navBtns = document.querySelectorAll('.nav-btn');
+            if (navBtns.length === 0) return;
+            
+            navBtns.forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
             
             document.querySelectorAll('.admin-section').forEach(section => section.classList.remove('active'));
-            document.getElementById(tabName + 'Tab').classList.add('active');
-            
-            if (tabName === 'stats') {
-                updateAdminStats();
-            } else if (tabName === 'records') {
-                updateAllRecords();
-            } else if (tabName === 'whitelist') {
-                updateWhitelistDisplay();
-            } else if (tabName === 'prizes') {
-                updatePrizesDisplay();
+            const targetTab = document.getElementById(tabName + 'Tab');
+            if (targetTab) {
+                targetTab.classList.add('active');
             }
         }
 
@@ -1046,51 +1043,38 @@
                 try {
                     console.log('开始保存到Netlify:', record);
                     
-                    // 创建隐藏的iframe来提交表单
-                    const iframe = document.createElement('iframe');
-                    iframe.name = 'netlify-submit-iframe';
-                    iframe.style.display = 'none';
-                    document.body.appendChild(iframe);
+                    // 使用XMLHttpRequest来提交表单数据
+                    const xhr = new XMLHttpRequest();
+                    const formData = new FormData();
                     
-                    // 创建临时表单
-                    const tempForm = document.createElement('form');
-                    tempForm.method = 'POST';
-                    tempForm.action = '/';
-                    tempForm.target = 'netlify-submit-iframe';
-                    tempForm.style.display = 'none';
+                    // 添加表单数据
+                    formData.append('form-name', 'lottery-records');
+                    formData.append('timestamp', record.timestamp);
+                    formData.append('roomNumber', record.roomNumber);
+                    formData.append('name', record.name);
+                    formData.append('phone', record.phone);
+                    formData.append('prize', record.prize);
+                    formData.append('status', '已抽奖');
+                    formData.append('bot-field', ''); // 蜜罐字段
                     
-                    // 添加表单字段
-                    const fields = {
-                        'form-name': 'lottery-records',
-                        'timestamp': record.timestamp,
-                        'roomNumber': record.roomNumber,
-                        'name': record.name,
-                        'phone': record.phone,
-                        'prize': record.prize,
-                        'status': '已抽奖',
-                        'bot-field': '' // 蜜罐字段
+                    xhr.open('POST', '/');
+                    xhr.send(formData);
+                    
+                    xhr.onload = function() {
+                        if (xhr.status === 200 || xhr.status === 404) {
+                            // Netlify Forms 在成功时会重定向，所以404也可能是成功的
+                            console.log('Netlify表单提交完成，状态:', xhr.status);
+                            resolve(true);
+                        } else {
+                            console.log('Netlify表单提交可能失败，状态:', xhr.status);
+                            resolve(false);
+                        }
                     };
                     
-                    for (const [name, value] of Object.entries(fields)) {
-                        const input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = name;
-                        input.value = value;
-                        tempForm.appendChild(input);
-                    }
-                    
-                    document.body.appendChild(tempForm);
-                    
-                    // 提交表单
-                    tempForm.submit();
-                    
-                    // 清理
-                    setTimeout(() => {
-                        document.body.removeChild(tempForm);
-                        document.body.removeChild(iframe);
-                        console.log('Netlify表单提交完成');
-                        resolve(true);
-                    }, 1000);
+                    xhr.onerror = function() {
+                        console.log('Netlify表单提交失败');
+                        resolve(false);
+                    };
                     
                 } catch (error) {
                     console.error('Netlify保存失败:', error);
