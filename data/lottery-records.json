@@ -1,11 +1,18 @@
 {
   "lotteryRecords": [
     {
+      "timestamp": "2025/10/18 15:41:10",
+      "roomNumber": "K10-1-1-1706",
+      "name": "姜雪莹",
+      "phone": "13972009262",
+      "prize": "2026年7月份车位"
+    },
+    {
       "timestamp": "2025/10/18 15:40:02",
       "roomNumber": "K8-6-1-2903",
-      "name": "陶小霞",
+      "name": "é¶å°é",
       "phone": "13177282675",
-      "prize": "2026年5月份车位"
+      "prize": "2026å¹´5æä»½è½¦ä½"
     }
   ],
   "prizes": [
@@ -24,7 +31,7 @@
       "name": "2026年7月份车位",
       "quantity": 10,
       "probability": 5,
-      "won": null
+      "won": 1
     },
     {
       "name": "谢谢参与",
@@ -39,12 +46,13 @@
     "K12-3-2-1002",
     "K8-6-1-1604",
     "K12-2-1-101",
-    "K8-6-1-2903"
+    "K8-6-1-2903",
+    "K10-1-1-1706"
   ],
-  "lastUpdate": "2025-10-18T07:40:03.701Z",
+  "lastUpdate": "2025-10-18T07:41:11.582Z",
   "stats": {
-    "totalRecords": 1,
-    "totalPrizes": 1,
+    "totalRecords": 2,
+    "totalPrizes": 2,
     "participationRate": 3
   }
 }
