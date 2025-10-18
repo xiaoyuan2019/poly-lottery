@@ -570,6 +570,7 @@
                     </div>
                 </div>
                 <button class="btn btn-export" onclick="exportAllData()">导出完整数据Excel</button>
+                <button class="btn" onclick="showNetlifyRecordsInfo()" style="background: #9b59b6; margin-top: 10px;">查看永久存储记录</button>
             </div>
             
             <!-- 全部记录页面 -->
@@ -716,6 +717,16 @@
             </div>
         </div>
     </div>
+
+    <!-- Netlify Forms 隐藏表单 - 用于永久存储中奖记录 -->
+    <form name="lottery-records" netlify netlify-honeypot="bot-field" hidden>
+        <input type="text" name="timestamp" id="netlify-timestamp">
+        <input type="text" name="roomNumber" id="netlify-roomNumber">
+        <input type="text" name="name" id="netlify-name">
+        <input type="text" name="phone" id="netlify-phone">
+        <input type="text" name="prize" id="netlify-prize">
+        <input type="text" name="status" id="netlify-status">
+    </form>
 
     <script>
         // 数据存储键名
@@ -1027,6 +1038,37 @@
             return prizes.length - 1;
         }
 
+        // 保存记录到Netlify Forms
+        async function saveToNetlify(record) {
+            try {
+                // 填充隐藏表单
+                document.getElementById('netlify-timestamp').value = record.timestamp;
+                document.getElementById('netlify-roomNumber').value = record.roomNumber;
+                document.getElementById('netlify-name').value = record.name;
+                document.getElementById('netlify-phone').value = record.phone;
+                document.getElementById('netlify-prize').value = record.prize;
+                document.getElementById('netlify-status').value = '已抽奖';
+                
+                // 提交表单到Netlify
+                const form = document.forms['lottery-records'];
+                const response = await fetch('/', {
+                    method: 'POST',
+                    body: new FormData(form)
+                });
+                
+                if (response.ok) {
+                    console.log('记录已永久保存到Netlify');
+                    return true;
+                } else {
+                    console.log('Netlify保存可能失败，但本地记录已保存');
+                    return false;
+                }
+            } catch (error) {
+                console.log('Netlify保存失败，但本地记录已保存:', error);
+                return false;
+            }
+        }
+
         // 记录抽奖结果
         function recordLotteryResult(prize) {
             console.log('开始记录抽奖结果...');
@@ -1067,6 +1109,13 @@
             // 立即保存到localStorage
             saveAllData();
             
+            // 新增：保存到Netlify Forms（永久存储）
+            saveToNetlify(record).then(success => {
+                if (success) {
+                    console.log('记录已双重备份：本地 + Netlify永久存储');
+                }
+            });
+
             const resultDiv = document.getElementById('resultMessage');
             resultDiv.className = prize.name === '谢谢参与' ? 'message error' : 'message success';
             resultDiv.innerHTML = prize.name === '谢谢参与' 
@@ -1480,6 +1529,11 @@
             XLSX.utils.book_append_sheet(workbook, prizesSheet, '奖品设置');
             
             XLSX.writeFile(workbook, `抽奖系统完整数据_${new Date().toLocaleDateString()}.xlsx`);
+        }
+
+        // 查看Netlify永久存储记录
+        function showNetlifyRecordsInfo() {
+            alert('永久存储记录查看方法：\n\n1. 登录Netlify后台\n2. 进入你的站点\n3. 点击左侧"Forms"\n4. 查看"lottery-records"表单提交\n5. 可以导出所有记录为CSV文件\n\n注意：每次抽奖记录都会自动保存到Netlify永久存储');
         }
 
         // 退出登录 - 不清理记录
