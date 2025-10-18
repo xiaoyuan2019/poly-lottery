@@ -726,6 +726,8 @@
         <input type="text" name="phone" id="netlify-phone">
         <input type="text" name="prize" id="netlify-prize">
         <input type="text" name="status" id="netlify-status">
+        <!-- 蜜罐字段 -->
+        <input type="text" name="bot-field" style="display: none;">
     </form>
 
     <script>
@@ -1040,33 +1042,61 @@
 
         // 保存记录到Netlify Forms
         async function saveToNetlify(record) {
-            try {
-                // 填充隐藏表单
-                document.getElementById('netlify-timestamp').value = record.timestamp;
-                document.getElementById('netlify-roomNumber').value = record.roomNumber;
-                document.getElementById('netlify-name').value = record.name;
-                document.getElementById('netlify-phone').value = record.phone;
-                document.getElementById('netlify-prize').value = record.prize;
-                document.getElementById('netlify-status').value = '已抽奖';
-                
-                // 提交表单到Netlify
-                const form = document.forms['lottery-records'];
-                const response = await fetch('/', {
-                    method: 'POST',
-                    body: new FormData(form)
-                });
-                
-                if (response.ok) {
-                    console.log('记录已永久保存到Netlify');
-                    return true;
-                } else {
-                    console.log('Netlify保存可能失败，但本地记录已保存');
-                    return false;
+            return new Promise((resolve) => {
+                try {
+                    console.log('开始保存到Netlify:', record);
+                    
+                    // 创建隐藏的iframe来提交表单
+                    const iframe = document.createElement('iframe');
+                    iframe.name = 'netlify-submit-iframe';
+                    iframe.style.display = 'none';
+                    document.body.appendChild(iframe);
+                    
+                    // 创建临时表单
+                    const tempForm = document.createElement('form');
+                    tempForm.method = 'POST';
+                    tempForm.action = '/';
+                    tempForm.target = 'netlify-submit-iframe';
+                    tempForm.style.display = 'none';
+                    
+                    // 添加表单字段
+                    const fields = {
+                        'form-name': 'lottery-records',
+                        'timestamp': record.timestamp,
+                        'roomNumber': record.roomNumber,
+                        'name': record.name,
+                        'phone': record.phone,
+                        'prize': record.prize,
+                        'status': '已抽奖',
+                        'bot-field': '' // 蜜罐字段
+                    };
+                    
+                    for (const [name, value] of Object.entries(fields)) {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = name;
+                        input.value = value;
+                        tempForm.appendChild(input);
+                    }
+                    
+                    document.body.appendChild(tempForm);
+                    
+                    // 提交表单
+                    tempForm.submit();
+                    
+                    // 清理
+                    setTimeout(() => {
+                        document.body.removeChild(tempForm);
+                        document.body.removeChild(iframe);
+                        console.log('Netlify表单提交完成');
+                        resolve(true);
+                    }, 1000);
+                    
+                } catch (error) {
+                    console.error('Netlify保存失败:', error);
+                    resolve(false);
                 }
-            } catch (error) {
-                console.log('Netlify保存失败，但本地记录已保存:', error);
-                return false;
-            }
+            });
         }
 
         // 记录抽奖结果
@@ -1113,6 +1143,8 @@
             saveToNetlify(record).then(success => {
                 if (success) {
                     console.log('记录已双重备份：本地 + Netlify永久存储');
+                } else {
+                    console.log('Netlify保存失败，但本地记录已保存');
                 }
             });
 
