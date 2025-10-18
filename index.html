@@ -2,103 +2,57 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>业主抽奖平台</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>保利物业抽奖活动</title>
+    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
         }
         
         body {
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            color: #333;
-            line-height: 1.6;
+            font-family: "Microsoft YaHei", sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
         }
         
         .container {
-            max-width: 800px;
+            max-width: 400px;
             margin: 0 auto;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             overflow: hidden;
-            position: relative;
         }
         
-        header {
-            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+        .header {
+            background: #1a5fb4;
             color: white;
             padding: 20px;
             text-align: center;
-            position: relative;
         }
         
         .logo {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        
-        .subtitle {
-            font-size: 14px;
-            opacity: 0.9;
-        }
-        
-        .user-info {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 14px;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 5px 10px;
-            border-radius: 15px;
-        }
-        
-        .logout-btn {
-            background: rgba(255, 255, 255, 0.3);
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 15px;
-            cursor: pointer;
-            margin-left: 10px;
-            font-size: 12px;
-        }
-        
-        .tabs {
+            width: 150px;
+            height: 50px;
+            margin: 0 auto 10px;
             display: flex;
-            background: #f1f1f1;
-            border-bottom: 1px solid #ddd;
-        }
-        
-        .tab {
-            flex: 1;
-            padding: 15px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
+            align-items: center;
+            justify-content: center;
             font-weight: bold;
-            color: #666;
+            color: white;
+            font-size: 20px;
         }
         
-        .tab.active {
-            background: white;
-            color: #4facfe;
-            border-bottom: 3px solid #4facfe;
-        }
-        
-        .tab-content {
-            display: none;
+        .section {
             padding: 20px;
-            min-height: 400px;
+            display: none;
         }
         
-        .tab-content.active {
+        .active {
             display: block;
         }
         
@@ -109,502 +63,656 @@
         label {
             display: block;
             margin-bottom: 5px;
+            color: #333;
             font-weight: bold;
-            color: #555;
         }
         
-        input, select, textarea {
+        input, select {
             width: 100%;
             padding: 12px;
-            border: 1px solid #ddd;
+            border: 2px solid #ddd;
             border-radius: 8px;
             font-size: 16px;
+            transition: border-color 0.3s;
         }
         
-        button {
-            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+        input:focus, select:focus {
+            border-color: #1a5fb4;
+            outline: none;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: #1a5fb4;
             color: white;
             border: none;
-            padding: 12px 20px;
             border-radius: 8px;
-            cursor: pointer;
             font-size: 16px;
             font-weight: bold;
-            transition: all 0.3s;
-            width: 100%;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #154b8a;
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .btn-admin {
+            background: #e74c3c;
             margin-top: 10px;
         }
         
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        .btn-admin:hover {
+            background: #c0392b;
         }
         
-        button.secondary {
-            background: #6c757d;
+        .btn-export {
+            background: #27ae60;
+            margin-top: 10px;
         }
         
-        .prize-item, .whitelist-item, .record-item {
+        .btn-export:hover {
+            background: #219a52;
+        }
+        
+        .btn-import {
+            background: #f39c12;
+            margin-top: 10px;
+        }
+        
+        .btn-import:hover {
+            background: #d68910;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-edit {
+            background: #3498db;
+            padding: 8px 15px;
+            margin: 2px;
+        }
+
+        .btn-delete {
+            background: #e74c3c;
+            padding: 8px 15px;
+            margin: 2px;
+        }
+
+        .btn-reset {
+            background: #9b59b6;
+            padding: 8px 15px;
+            margin: 2px;
+        }
+
+        .btn-logout {
+            background: #95a5a6;
+            margin-top: 10px;
+        }
+
+        .btn-logout:hover {
+            background: #7f8c8d;
+        }
+
+        /* 四宫格抽奖样式 */
+        .lottery-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 20px auto;
+            max-width: 300px;
+        }
+        
+        .grid-item {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #1a5fb4, #154b8a);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            padding: 10px;
+            border: 3px solid transparent;
+            box-shadow: 0 4px 15px rgba(26, 95, 180, 0.3);
+        }
+        
+        .grid-item.active {
+            background: linear-gradient(135deg, #ffd700, #ff6b6b);
+            transform: scale(0.95);
+            border-color: #ffd700;
+            box-shadow: 0 0 20px gold;
+            animation: pulse 0.5s ease-in-out;
+        }
+        
+        .grid-item.thank {
+            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.9); }
+            100% { transform: scale(0.95); }
+        }
+        
+        .lottery-container {
+            position: relative;
+            text-align: center;
+        }
+        
+        .lottery-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        /* 中奖记录样式 */
+        .record-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        
+        .record-item {
+            padding: 12px;
             background: #f8f9fa;
-            border-radius: 10px;
-            padding: 15px;
+            border-radius: 8px;
             margin-bottom: 10px;
-            border-left: 4px solid #4facfe;
+            border-left: 4px solid #1a5fb4;
         }
         
-        .prize-header, .whitelist-header {
+        .record-info {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
+            font-size: 14px;
+            color: #666;
         }
         
-        .prize-name, .whitelist-name {
+        .record-prize {
+            font-weight: bold;
+            color: #1a5fb4;
+            margin-top: 5px;
+        }
+        
+        .user-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .nav {
+            display: flex;
+            justify-content: space-around;
+            background: #f1f2f6;
+            padding: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-btn {
+            padding: 10px 15px;
+            background: none;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #666;
+            font-size: 14px;
+            margin: 2px;
+        }
+        
+        .nav-btn.active {
+            background: #1a5fb4;
+            color: white;
+        }
+        
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: center;
             font-weight: bold;
             font-size: 18px;
         }
         
-        .prize-probability, .whitelist-phone {
-            color: #666;
-            font-size: 14px;
+        .success {
+            background: #55efc4;
+            color: #2d3436;
         }
         
-        .lottery-container {
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .wheel-container {
-            position: relative;
-            width: 300px;
-            height: 300px;
-            margin: 0 auto 30px;
-        }
-        
-        .wheel {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background: conic-gradient(
-                #ff9a9e, #fad0c4, #fad0c4, #a1c4fd, 
-                #c2e9fb, #c2e9fb, #ffecd2, #ffecd2,
-                #ff9a9e
-            );
-            position: relative;
-            transition: transform 3s cubic-bezier(0.17, 0.67, 0.83, 0.67);
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
-        }
-        
-        .wheel-pointer {
-            position: absolute;
-            top: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 40px;
-            height: 40px;
-            background: #ff4757;
-            clip-path: polygon(50% 100%, 0 0, 100% 0);
-            z-index: 10;
-        }
-        
-        .lottery-btn {
-            width: 200px;
-            margin: 20px auto;
-            font-size: 20px;
-            padding: 15px;
-        }
-        
-        .login-container {
-            padding: 40px 20px;
-            text-align: center;
-        }
-        
-        .login-form {
-            max-width: 400px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        .login-title {
-            font-size: 24px;
-            margin-bottom: 20px;
-            color: #4facfe;
-        }
-        
-        .role-selector {
-            display: flex;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid #ddd;
-        }
-        
-        .role-option {
-            flex: 1;
-            padding: 12px;
-            text-align: center;
-            cursor: pointer;
-            background: #f8f9fa;
-            transition: all 0.3s;
-        }
-        
-        .role-option.active {
-            background: #4facfe;
+        .error {
+            background: #ff7675;
             color: white;
         }
         
-        .result-modal {
+        .lottery-btn-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .spin-btn {
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #1a5fb4, #154b8a);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(26, 95, 180, 0.4);
+        }
+        
+        .spin-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(26, 95, 180, 0.6);
+        }
+        
+        .spin-btn:disabled {
+            background: #ccc;
+            transform: none;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+        
+        .format-hint {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+            text-align: center;
+        }
+        
+        .admin-panel {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+        
+        .admin-section {
+            display: none;
+        }
+        
+        .admin-section.active {
+            display: block;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .stat-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid #e9ecef;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1a5fb4;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .file-label {
+            display: block;
+            padding: 12px;
+            background: #f39c12;
+            color: white;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        
+        .whitelist-table, .prizes-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+        
+        .whitelist-table th, .whitelist-table td,
+        .prizes-table th, .prizes-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        .whitelist-table th, .prizes-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+        
+        .upload-area {
+            border: 2px dashed #1a5fb4;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin: 10px 0;
+            background: #f8f9fa;
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            color: #1a5fb4;
+            margin-bottom: 10px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .modal {
             display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 100;
-            justify-content: center;
-            align-items: center;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
         }
-        
-        .result-content {
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             background: white;
-            padding: 30px;
-            border-radius: 15px;
-            text-align: center;
-            max-width: 80%;
-            animation: pop 0.5s;
-        }
-        
-        @keyframes pop {
-            0% { transform: scale(0.5); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        
-        .result-title {
-            font-size: 24px;
-            margin-bottom: 15px;
-            color: #4facfe;
-        }
-        
-        .result-prize {
-            font-size: 28px;
-            font-weight: bold;
-            color: #ff4757;
-            margin: 20px 0;
-        }
-        
-        .share-section {
-            margin-top: 30px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            text-align: center;
-        }
-        
-        .share-btn {
-            display: inline-block;
-            background: #07c160;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 50px;
-            margin: 10px;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        
-        .data-section {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 10px;
-        }
-        
-        .data-title {
-            font-size: 18px;
-            margin-bottom: 10px;
-            color: #555;
-        }
-        
-        footer {
-            text-align: center;
             padding: 20px;
-            color: #666;
-            font-size: 14px;
-            border-top: 1px solid #eee;
-        }
-        
-        .admin-only {
-            display: none;
-        }
-        
-        .publish-guide {
-            margin-top: 30px;
-            padding: 20px;
-            background: #f8f9fa;
             border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
         }
-        
-        .publish-title {
-            font-size: 18px;
-            margin-bottom: 15px;
-            color: #555;
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
         }
-        
-        .publish-method {
-            margin-bottom: 15px;
-            padding: 10px;
-            background: white;
-            border-radius: 8px;
-            border-left: 4px solid #4facfe;
-        }
-        
-        @media (max-width: 600px) {
-            .container {
-                border-radius: 10px;
-            }
-            
-            .wheel-container {
-                width: 250px;
-                height: 250px;
-            }
-            
-            .tab {
-                padding: 12px 8px;
-                font-size: 14px;
-            }
-            
-            .user-info {
-                position: static;
-                text-align: center;
-                margin-top: 10px;
-            }
+
+        .modal-buttons .btn {
+            flex: 1;
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div style="color: white; font-size: 24px; font-weight: bold;">保利®物业</div>
+            </div>
+            <h2>幸运大转盘</h2>
+        </div>
+        
         <!-- 登录页面 -->
-        <div id="login-page" class="login-container">
-            <div class="login-form">
-                <div class="login-title">业主抽奖平台</div>
-                <p>请输入身份证号后6位登录</p>
-                
-                <div class="form-group">
-                    <div class="role-selector">
-                        <div class="role-option active" data-role="employee">普通员工</div>
-                        <div class="role-option" data-role="admin">管理员</div>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="id-number">身份证号后6位</label>
-                    <input type="text" id="id-number" placeholder="请输入身份证号后6位" maxlength="6">
-                </div>
-                
-                <button id="login-btn">登录</button>
-                
-                <div class="data-section" style="margin-top: 20px;">
-                    <div class="data-title">登录说明</div>
-                    <p>• 管理员：身份证后6位为 "admin" 或 "123456"</p>
-                    <p>• 普通员工：其他任意6位数字或字母</p>
-                    <p>• 普通员工只能参与抽奖</p>
-                    <p>• 管理员可以管理奖品、白名单和查看记录</p>
-                </div>
+        <div id="loginSection" class="section active">
+            <div class="form-group">
+                <input type="text" id="roomNumber" placeholder="请输入房号，例如：k10-1-1-101">
+            </div>
+            <div class="format-hint">房号格式：k10-1-1-101（楼栋-单元-楼层-房号）</div>
+            
+            <button class="btn" onclick="verifyUser()">业主登录</button>
+            <button class="btn btn-admin" onclick="showAdminLogin()">管理员登录</button>
+            
+            <div class="message" style="background: #ffeaa7; color: #2d3436;">
+                <p>温馨提示：</p>
+                <p>1. 请输入正确的房号进行验证</p>
+                <p>2. 每个房号仅有一次抽奖机会</p>
+                <p>3. 中奖结果以系统记录为准</p>
             </div>
         </div>
         
-        <!-- 主应用页面 -->
-        <div id="app-page" style="display: none;">
-            <header>
-                <div class="logo">业主抽奖平台</div>
-                <div class="subtitle">专为小区业主设计的抽奖活动</div>
-                <div class="user-info">
-                    <span id="user-role-display">普通员工</span>
-                    <button class="logout-btn" id="logout-btn">退出登录</button>
-                </div>
-            </header>
-            
-            <div class="tabs">
-                <div class="tab active" data-tab="lottery">抽奖</div>
-                <div class="tab admin-only" data-tab="prizes">奖品管理</div>
-                <div class="tab admin-only" data-tab="whitelist">白名单</div>
-                <div class="tab admin-only" data-tab="records">抽奖记录</div>
-                <div class="tab" data-tab="publish">发布指南</div>
+        <!-- 管理员登录页面 -->
+        <div id="adminLoginSection" class="section">
+            <div class="form-group">
+                <label for="adminAccount">管理员账号</label>
+                <input type="text" id="adminAccount" placeholder="请输入管理员账号">
+            </div>
+            <div class="form-group">
+                <label for="adminPassword">管理员密码</label>
+                <input type="password" id="adminPassword" placeholder="请输入管理员密码">
+            </div>
+            <button class="btn" onclick="verifyAdmin()">管理员登录</button>
+            <button class="btn" onclick="backToMainLogin()" style="background: #95a5a6; margin-top: 10px;">返回</button>
+        </div>
+        
+        <!-- 业主主页面 -->
+        <div id="mainSection" class="section">
+            <div class="user-info">
+                <h3 id="userWelcome">欢迎您！</h3>
+                <p id="userDetails">房号：- | 姓名：- | 手机：-</p>
+                <button class="btn btn-logout" onclick="userLogout()">退出登录</button>
             </div>
             
-            <!-- 抽奖标签页 -->
-            <div class="tab-content active" id="lottery">
-                <div class="lottery-container">
-                    <h2>幸运大抽奖</h2>
-                    <p>点击下方按钮开始抽奖，祝您好运！</p>
-                    
-                    <div class="wheel-container">
-                        <div class="wheel-pointer"></div>
-                        <div class="wheel" id="wheel"></div>
+            <!-- 业主只有抽奖页面，没有记录页面 -->
+            <div class="lottery-container">
+                <div class="lottery-title">幸运四宫格抽奖</div>
+                <div class="lottery-grid" id="lotteryGrid">
+                    <!-- 四宫格将通过JavaScript动态生成 -->
+                </div>
+            </div>
+            <div class="lottery-btn-container">
+                <button class="spin-btn" id="spinBtn" onclick="startLottery()">开始抽奖</button>
+            </div>
+            <div id="resultMessage"></div>
+        </div>
+        
+        <!-- 管理员主页面 -->
+        <div id="adminSection" class="section">
+            <div class="user-info">
+                <h3>管理员面板</h3>
+                <p>欢迎，管理员！</p>
+            </div>
+            
+            <div class="nav">
+                <button class="nav-btn active" onclick="showAdminTab('stats')">数据统计</button>
+                <button class="nav-btn" onclick="showAdminTab('records')">全部记录</button>
+                <button class="nav-btn" onclick="showAdminTab('whitelist')">白名单</button>
+                <button class="nav-btn" onclick="showAdminTab('prizes')">奖品设置</button>
+                <button class="nav-btn" onclick="showAdminTab('settings')">系统设置</button>
+            </div>
+            
+            <!-- 数据统计页面 -->
+            <div id="statsTab" class="admin-section active">
+                <h3>抽奖数据统计</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalUsers">0</div>
+                        <div class="stat-label">总用户数</div>
                     </div>
-                    
+                    <div class="stat-item">
+                        <div class="stat-value" id="participatedUsers">0</div>
+                        <div class="stat-label">已参与用户</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalPrizes">0</div>
+                        <div class="stat-label">总中奖数</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="participationRate">0%</div>
+                        <div class="stat-label">参与率</div>
+                    </div>
+                </div>
+                <button class="btn btn-export" onclick="exportAllData()">导出完整数据Excel</button>
+            </div>
+            
+            <!-- 全部记录页面 -->
+            <div id="allRecordsTab" class="admin-section">
+                <h3>全部抽奖记录</h3>
+                <button class="btn btn-export" onclick="exportRecords()">导出记录Excel</button>
+                <div class="record-list" id="allRecordList">
+                    <!-- 记录将通过JavaScript动态生成 -->
+                </div>
+            </div>
+            
+            <!-- 白名单管理页面 -->
+            <div id="whitelistTab" class="admin-section">
+                <h3>白名单管理</h3>
+                
+                <button class="btn" onclick="showAddUserModal()">新增用户</button>
+                
+                <div class="upload-area">
+                    <div class="upload-icon">📊</div>
+                    <p>导入Excel白名单文件</p>
+                    <p style="font-size: 12px; color: #666;">支持 .xlsx 格式，包含房号、姓名、手机号列</p>
+                    <input type="file" id="excelFile" class="file-input" accept=".xlsx, .xls" onchange="handleFileImport(this.files)">
+                    <label for="excelFile" class="file-label">选择Excel文件</label>
+                </div>
+                
+                <button class="btn btn-export" onclick="exportWhitelist()">导出白名单Excel</button>
+                
+                <div class="admin-panel">
+                    <h4>当前白名单 (<span id="whitelistCount">0</span> 条)</h4>
+                    <div class="record-list">
+                        <table class="whitelist-table">
+                            <thead>
+                                <tr>
+                                    <th>房号</th>
+                                    <th>姓名</th>
+                                    <th>手机号</th>
+                                    <th>抽奖状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="whitelistTable">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 奖品设置页面 -->
+            <div id="prizesTab" class="admin-section">
+                <h3>奖品设置</h3>
+                
+                <button class="btn" onclick="showAddPrizeModal()">新增奖品</button>
+                
+                <div class="admin-panel">
+                    <h4>奖品列表 (<span id="prizesCount">0</span> 个)</h4>
+                    <div class="record-list">
+                        <table class="prizes-table">
+                            <thead>
+                                <tr>
+                                    <th>奖品名称</th>
+                                    <th>奖品数量</th>
+                                    <th>中奖概率</th>
+                                    <th>已中奖数</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="prizesTable">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 系统设置页面 -->
+            <div id="settingsTab" class="admin-section">
+                <h3>系统设置</h3>
+                
+                <div class="admin-panel">
+                    <h4>修改管理员密码</h4>
                     <div class="form-group">
-                        <label for="user-phone">请输入手机号：</label>
-                        <input type="tel" id="user-phone" placeholder="请输入您的手机号">
+                        <label for="newPassword">新密码</label>
+                        <input type="password" id="newPassword" placeholder="请输入新密码">
                     </div>
-                    
-                    <button class="lottery-btn" id="start-lottery">开始抽奖</button>
-                    
-                    <div class="share-section">
-                        <p>分享给其他业主参与抽奖</p>
-                        <a href="javascript:void(0);" class="share-btn" id="share-wechat">分享到微信</a>
-                        <a href="javascript:void(0);" class="share-btn" id="copy-link">复制链接</a>
+                    <div class="form-group">
+                        <label for="confirmPassword">确认新密码</label>
+                        <input type="password" id="confirmPassword" placeholder="请再次输入新密码">
                     </div>
-                    
-                    <div class="data-section">
-                        <div class="data-title">活动数据</div>
-                        <p>已参与人数：<span id="participant-count">0</span></p>
-                        <p>剩余奖品数量：<span id="remaining-prizes">0</span></p>
-                    </div>
+                    <button class="btn" onclick="changePassword()">修改密码</button>
+                </div>
+
+                <div class="admin-panel" style="margin-top: 15px;">
+                    <h4>数据管理</h4>
+                    <button class="btn btn-danger" onclick="clearAllData()">清空所有数据</button>
+                    <p style="font-size: 12px; color: #666; margin-top: 10px;">注意：此操作将清空所有抽奖记录和用户数据，请谨慎操作！</p>
                 </div>
             </div>
             
-            <!-- 奖品管理标签页 -->
-            <div class="tab-content" id="prizes">
-                <h2>奖品管理</h2>
-                <p>添加和管理抽奖奖品</p>
-                
-                <div class="form-group">
-                    <label for="prize-name">奖品名称</label>
-                    <input type="text" id="prize-name" placeholder="例如：一等奖 iPhone 14">
-                </div>
-                
-                <div class="form-group">
-                    <label for="prize-probability">中奖概率 (%)</label>
-                    <input type="number" id="prize-probability" min="0" max="100" value="10">
-                </div>
-                
-                <div class="form-group">
-                    <label for="prize-count">奖品数量</label>
-                    <input type="number" id="prize-count" min="1" value="1">
-                </div>
-                
-                <button id="add-prize">添加奖品</button>
-                
-                <div id="prizes-list">
-                    <!-- 奖品列表将在这里动态生成 -->
-                </div>
-            </div>
-            
-            <!-- 白名单标签页 -->
-            <div class="tab-content" id="whitelist">
-                <h2>白名单管理</h2>
-                <p>只有白名单中的手机号可以参与抽奖</p>
-                
-                <div class="form-group">
-                    <label for="whitelist-phone">手机号</label>
-                    <input type="tel" id="whitelist-phone" placeholder="请输入业主手机号">
-                </div>
-                
-                <div class="form-group">
-                    <label for="whitelist-name">姓名 (可选)</label>
-                    <input type="text" id="whitelist-name" placeholder="请输入业主姓名">
-                </div>
-                
-                <button id="add-whitelist">添加到白名单</button>
-                
-                <div id="whitelist-list">
-                    <!-- 白名单列表将在这里动态生成 -->
-                </div>
-            </div>
-            
-            <!-- 抽奖记录标签页 -->
-            <div class="tab-content" id="records">
-                <h2>抽奖记录</h2>
-                <p>所有抽奖记录将在这里显示</p>
-                
-                <button id="clear-records" class="secondary">清空记录</button>
-                
-                <div id="records-list">
-                    <!-- 抽奖记录将在这里动态生成 -->
-                </div>
-            </div>
-            
-            <!-- 发布指南标签页 -->
-            <div class="tab-content" id="publish">
-                <div class="publish-guide">
-                    <div class="publish-title">本地对外发布指南</div>
-                    
-                    <div class="publish-method">
-                        <h3>方法一：使用内网穿透工具（推荐）</h3>
-                        <p><strong>步骤：</strong></p>
-                        <ol>
-                            <li>下载内网穿透工具（如 ngrok、frp、natapp 等）</li>
-                            <li>注册账号并获取免费隧道</li>
-                            <li>配置工具指向本地端口（如 8080）</li>
-                            <li>启动工具，获得公网访问地址</li>
-                            <li>将地址分享给外部用户</li>
-                        </ol>
-                        <p><strong>推荐工具：</strong></p>
-                        <ul>
-                            <li>Ngrok：https://ngrok.com/</li>
-                            <li>Sunny-Ngrok：https://www.ngrok.cc/</li>
-                            <li>Frp：https://github.com/fatedier/frp</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="publish-method">
-                        <h3>方法二：使用 Python 简单服务器</h3>
-                        <p><strong>步骤：</strong></p>
-                        <ol>
-                            <li>将本HTML文件保存为 index.html</li>
-                            <li>打开命令提示符，进入文件所在目录</li>
-                            <li>运行命令：<code>python -m http.server 8080</code></li>
-                            <li>配合内网穿透工具使用</li>
-                        </ol>
-                    </div>
-                    
-                    <div class="publish-method">
-                        <h3>方法三：使用 Node.js 静态服务器</h3>
-                        <p><strong>步骤：</strong></p>
-                        <ol>
-                            <li>安装 Node.js</li>
-                            <li>安装 http-server：<code>npm install -g http-server</code></li>
-                            <li>进入文件目录运行：<code>http-server -p 8080</code></li>
-                            <li>配合内网穿透工具使用</li>
-                        </ol>
-                    </div>
-                    
-                    <div class="publish-method">
-                        <h3>方法四：使用云存储服务</h3>
-                        <p><strong>步骤：</strong></p>
-                        <ol>
-                            <li>注册 GitHub Pages、Vercel 或 Netlify 账号</li>
-                            <li>上传HTML文件到平台</li>
-                            <li>获得免费域名访问地址</li>
-                            <li>注意：部分平台可能需要简单配置</li>
-                        </ol>
-                    </div>
-                    
-                    <div class="data-section">
-                        <div class="data-title">注意事项</div>
-                        <p>• 数据存储在浏览器本地，不同用户数据独立</p>
-                        <p>• 如需统一数据管理，建议部署后端服务</p>
-                        <p>• 确保网络环境安全，避免敏感信息泄露</p>
-                    </div>
-                </div>
-            </div>
-            
-            <footer>
-                <p>© 2023 业主抽奖平台 | 带权限管理的纯前端实现</p>
-            </footer>
+            <button class="btn" onclick="logout()" style="background: #95a5a6; margin-top: 20px;">退出管理员</button>
         </div>
-        
-        <!-- 抽奖结果弹窗 -->
-        <div class="result-modal" id="result-modal">
-            <div class="result-content">
-                <div class="result-title">抽奖结果</div>
-                <div class="result-prize" id="result-prize">恭喜您获得一等奖！</div>
-                <p id="result-message">请妥善保管中奖信息，联系管理员兑奖</p>
-                <button id="close-modal">确定</button>
+    </div>
+
+    <!-- 新增用户模态框 -->
+    <div id="addUserModal" class="modal">
+        <div class="modal-content">
+            <h3 id="userModalTitle">新增用户</h3>
+            <div class="form-group">
+                <label for="modalRoomNumber">房号</label>
+                <input type="text" id="modalRoomNumber" placeholder="请输入房号">
+            </div>
+            <div class="form-group">
+                <label for="modalUserName">姓名</label>
+                <input type="text" id="modalUserName" placeholder="请输入姓名">
+            </div>
+            <div class="form-group">
+                <label for="modalUserPhone">手机号</label>
+                <input type="text" id="modalUserPhone" placeholder="请输入手机号">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn" onclick="saveUser()">保存</button>
+                <button class="btn" onclick="closeModal('addUserModal')" style="background: #95a5a6;">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增奖品模态框 -->
+    <div id="addPrizeModal" class="modal">
+        <div class="modal-content">
+            <h3 id="prizeModalTitle">新增奖品</h3>
+            <div class="form-group">
+                <label for="modalPrizeName">奖品名称</label>
+                <input type="text" id="modalPrizeName" placeholder="请输入奖品名称">
+            </div>
+            <div class="form-group">
+                <label for="modalPrizeQuantity">奖品数量</label>
+                <input type="number" id="modalPrizeQuantity" placeholder="请输入奖品数量" min="1">
+            </div>
+            <div class="form-group">
+                <label for="modalPrizeProbability">中奖概率 (%)</label>
+                <input type="number" id="modalPrizeProbability" placeholder="请输入中奖概率" min="0" max="100" step="0.1">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn" onclick="savePrize()">保存</button>
+                <button class="btn" onclick="closeModal('addPrizeModal')" style="background: #95a5a6;">取消</button>
             </div>
         </div>
     </div>
@@ -612,520 +720,794 @@
     <script>
         // 数据存储键名
         const STORAGE_KEYS = {
-            PRIZES: 'lottery_prizes',
             WHITELIST: 'lottery_whitelist',
+            PRIZES: 'lottery_prizes',
             RECORDS: 'lottery_records',
-            USER: 'current_user'
+            USED_ROOMS: 'lottery_used_rooms',
+            ADMIN_PASSWORD: 'lottery_admin_password',
+            CURRENT_USER: 'lottery_current_user'
         };
-
-        // 用户角色
-        const USER_ROLES = {
-            ADMIN: 'admin',
-            EMPLOYEE: 'employee'
-        };
-
-        // 管理员身份验证码
-        const ADMIN_CODES = ['admin', '123456'];
 
         // 初始化数据
-        function initData() {
-            if (!localStorage.getItem(STORAGE_KEYS.PRIZES)) {
-                localStorage.setItem(STORAGE_KEYS.PRIZES, JSON.stringify([]));
+        function initializeData() {
+            console.log('正在初始化数据...');
+            
+            // 从localStorage加载数据，如果不存在则使用默认值
+            const savedWhitelist = localStorage.getItem(STORAGE_KEYS.WHITELIST);
+            const savedPrizes = localStorage.getItem(STORAGE_KEYS.PRIZES);
+            const savedRecords = localStorage.getItem(STORAGE_KEYS.RECORDS);
+            const savedUsedRooms = localStorage.getItem(STORAGE_KEYS.USED_ROOMS);
+            const savedCurrentUser = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+            
+            console.log('加载的数据:', {
+                whitelist: savedWhitelist ? JSON.parse(savedWhitelist).length : 0,
+                prizes: savedPrizes ? JSON.parse(savedPrizes).length : 0,
+                records: savedRecords ? JSON.parse(savedRecords).length : 0,
+                usedRooms: savedUsedRooms ? JSON.parse(savedUsedRooms).length : 0,
+                currentUser: savedCurrentUser ? '存在' : '不存在'
+            });
+            
+            whitelist = savedWhitelist ? JSON.parse(savedWhitelist) : [
+                { roomNumber: "k10-1-1-101", name: "张三", phone: "13800138001" },
+                { roomNumber: "k10-1-1-102", name: "李四", phone: "13800138002" },
+                { roomNumber: "k10-1-2-101", name: "王五", phone: "13800138003" },
+                { roomNumber: "k10-1-2-102", name: "赵六", phone: "13800138004" }
+            ];
+            
+            prizes = savedPrizes ? JSON.parse(savedPrizes) : [
+                { name: "一等奖", quantity: 1, probability: 10, won: 0 },
+                { name: "二等奖", quantity: 2, probability: 20, won: 0 },
+                { name: "三等奖", quantity: 3, probability: 30, won: 0 },
+                { name: "谢谢参与", quantity: 9999, probability: 40, won: 0 }
+            ];
+            
+            lotteryRecords = savedRecords ? JSON.parse(savedRecords) : [];
+            usedRooms = savedUsedRooms ? JSON.parse(savedUsedRooms) : [];
+            
+            // 恢复当前用户状态
+            if (savedCurrentUser) {
+                currentUser = JSON.parse(savedCurrentUser);
+                // 检查用户是否还在白名单中
+                const userExists = whitelist.find(u => u.roomNumber === currentUser.roomNumber);
+                if (userExists) {
+                    // 用户存在，直接显示主页面
+                    setTimeout(() => showMainSection(), 100);
+                } else {
+                    // 用户不存在，清除当前用户
+                    currentUser = null;
+                    localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+                }
             }
             
-            if (!localStorage.getItem(STORAGE_KEYS.WHITELIST)) {
-                localStorage.setItem(STORAGE_KEYS.WHITELIST, JSON.stringify([]));
+            // 确保数据正确保存到localStorage
+            saveAllData();
+            
+            console.log('初始化完成，当前记录数:', lotteryRecords.length);
+        }
+
+        // 保存所有数据到localStorage
+        function saveAllData() {
+            try {
+                localStorage.setItem(STORAGE_KEYS.WHITELIST, JSON.stringify(whitelist));
+                localStorage.setItem(STORAGE_KEYS.PRIZES, JSON.stringify(prizes));
+                localStorage.setItem(STORAGE_KEYS.RECORDS, JSON.stringify(lotteryRecords));
+                localStorage.setItem(STORAGE_KEYS.USED_ROOMS, JSON.stringify(usedRooms));
+                if (currentUser) {
+                    localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
+                }
+                console.log('数据保存成功，记录数:', lotteryRecords.length);
+            } catch (error) {
+                console.error('保存数据失败:', error);
             }
-            
-            if (!localStorage.getItem(STORAGE_KEYS.RECORDS)) {
-                localStorage.setItem(STORAGE_KEYS.RECORDS, JSON.stringify([]));
+        }
+
+        // 确保始终包含谢谢参与奖项
+        function ensureThankYouPrize() {
+            const hasThankYou = prizes.some(prize => prize.name === '谢谢参与');
+            if (!hasThankYou) {
+                prizes.push({ name: "谢谢参与", quantity: 9999, probability: 40, won: 0 });
+                saveAllData();
             }
+        }
+
+        const gridColors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F'];
+
+        let currentUser = null;
+        let whitelist = [];
+        let prizes = [];
+        let lotteryRecords = [];
+        let usedRooms = [];
+        let isSpinning = false;
+        let editingUserIndex = -1;
+        let editingPrizeIndex = -1;
+
+        // 管理员密码
+        let adminPassword = localStorage.getItem(STORAGE_KEYS.ADMIN_PASSWORD) || 'admin123';
+
+        // 初始化四宫格
+        function initLotteryGrid() {
+            const grid = document.getElementById('lotteryGrid');
+            grid.innerHTML = '';
             
-            updateUI();
-        }
-
-        // 获取数据
-        function getData(key) {
-            return JSON.parse(localStorage.getItem(key) || '[]');
-        }
-
-        // 保存数据
-        function saveData(key, data) {
-            localStorage.setItem(key, JSON.stringify(data));
-            updateUI();
-        }
-
-        // 更新UI
-        function updateUI() {
-            updatePrizesList();
-            updateWhitelistList();
-            updateRecordsList();
-            updateStats();
-        }
-
-        // 更新奖品列表
-        function updatePrizesList() {
-            const prizes = getData(STORAGE_KEYS.PRIZES);
-            const prizesList = document.getElementById('prizes-list');
+            // 确保包含谢谢参与
+            ensureThankYouPrize();
             
-            prizesList.innerHTML = '';
+            // 动态设置网格布局
+            const prizeCount = prizes.length;
+            const columns = Math.ceil(Math.sqrt(prizeCount));
+            const rows = Math.ceil(prizeCount / columns);
             
-            if (prizes.length === 0) {
-                prizesList.innerHTML = '<p>暂无奖品，请添加奖品</p>';
-                return;
-            }
+            grid.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+            grid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+            grid.style.maxWidth = `${columns * 140}px`;
             
             prizes.forEach((prize, index) => {
-                const prizeItem = document.createElement('div');
-                prizeItem.className = 'prize-item';
-                prizeItem.innerHTML = `
-                    <div class="prize-header">
-                        <div class="prize-name">${prize.name}</div>
-                        <div class="prize-probability">概率: ${prize.probability}%</div>
+                const item = document.createElement('div');
+                item.className = `grid-item ${prize.name === '谢谢参与' ? 'thank' : ''}`;
+                item.style.background = prize.name === '谢谢参与' 
+                    ? 'linear-gradient(135deg, #95a5a6, #7f8c8d)'
+                    : `linear-gradient(135deg, ${gridColors[index % gridColors.length]}, ${adjustColor(gridColors[index % gridColors.length], -20)})`;
+                item.innerHTML = `<div>${prize.name}</div>`;
+                item.dataset.index = index;
+                grid.appendChild(item);
+            });
+        }
+
+        // 调整颜色亮度
+        function adjustColor(color, amount) {
+            return '#' + color.replace(/^#/, '').replace(/../g, color => 
+                ('0' + Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).substr(-2)
+            );
+        }
+
+        // 验证用户登录
+        function verifyUser() {
+            const roomNumber = document.getElementById('roomNumber').value.trim();
+            
+            if (!roomNumber) {
+                alert('请输入房号');
+                return;
+            }
+            
+            const user = whitelist.find(u => u.roomNumber === roomNumber);
+            
+            if (!user) {
+                alert('房号不存在或未在白名单中');
+                return;
+            }
+            
+            if (usedRooms.includes(roomNumber)) {
+                alert('该房号已参与过抽奖，每个房号仅限一次');
+                return;
+            }
+            
+            currentUser = user;
+            saveAllData(); // 立即保存当前用户状态
+            showMainSection();
+        }
+
+        // 显示管理员登录
+        function showAdminLogin() {
+            document.getElementById('loginSection').classList.remove('active');
+            document.getElementById('adminLoginSection').classList.add('active');
+        }
+
+        // 验证管理员登录
+        function verifyAdmin() {
+            const account = document.getElementById('adminAccount').value.trim();
+            const password = document.getElementById('adminPassword').value.trim();
+            
+            if (account === 'admin' && password === adminPassword) {
+                document.getElementById('adminLoginSection').classList.remove('active');
+                document.getElementById('adminSection').classList.add('active');
+                updateAdminStats();
+                updateWhitelistDisplay();
+                updatePrizesDisplay();
+                updateAllRecords();
+            } else {
+                alert('管理员账号或密码错误');
+            }
+        }
+
+        // 返回主登录页面
+        function backToMainLogin() {
+            document.getElementById('adminLoginSection').classList.remove('active');
+            document.getElementById('loginSection').classList.add('active');
+        }
+
+        // 显示主页面
+        function showMainSection() {
+            document.getElementById('loginSection').classList.remove('active');
+            document.getElementById('mainSection').classList.add('active');
+            
+            document.getElementById('userWelcome').textContent = `欢迎，${currentUser.name}！`;
+            document.getElementById('userDetails').textContent = 
+                `房号：${currentUser.roomNumber} | 姓名：${currentUser.name} | 手机：${currentUser.phone}`;
+            
+            initLotteryGrid();
+
+            const spinBtn = document.getElementById('spinBtn');
+            if (usedRooms.includes(currentUser.roomNumber)) {
+                spinBtn.disabled = true;
+                spinBtn.textContent = '已抽奖';
+            } else {
+                spinBtn.disabled = false;
+                spinBtn.textContent = '开始抽奖';
+            }
+        }
+
+        // 用户退出登录
+        function userLogout() {
+            currentUser = null;
+            localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+            document.getElementById('mainSection').classList.remove('active');
+            document.getElementById('loginSection').classList.add('active');
+            document.getElementById('roomNumber').value = '';
+        }
+
+        // 显示管理员标签页
+        function showAdminTab(tabName) {
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.querySelectorAll('.admin-section').forEach(section => section.classList.remove('active'));
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            
+            if (tabName === 'stats') {
+                updateAdminStats();
+            } else if (tabName === 'records') {
+                updateAllRecords();
+            } else if (tabName === 'whitelist') {
+                updateWhitelistDisplay();
+            } else if (tabName === 'prizes') {
+                updatePrizesDisplay();
+            }
+        }
+
+        // 开始抽奖
+        function startLottery() {
+            if (usedRooms.includes(currentUser.roomNumber) || isSpinning) return;
+            
+            const gridItems = document.querySelectorAll('.grid-item');
+            const spinBtn = document.getElementById('spinBtn');
+            const resultDiv = document.getElementById('resultMessage');
+            
+            isSpinning = true;
+            spinBtn.disabled = true;
+            spinBtn.textContent = '抽奖中...';
+            resultDiv.innerHTML = '';
+            
+            // 清除之前的高亮
+            gridItems.forEach(item => item.classList.remove('active'));
+            
+            // 抽奖动画
+            let count = 0;
+            const totalRounds = 15 + Math.floor(Math.random() * 10);
+            let currentIndex = 0;
+            
+            const interval = setInterval(() => {
+                gridItems.forEach(item => item.classList.remove('active'));
+                gridItems[currentIndex].classList.add('active');
+                
+                currentIndex = (currentIndex + 1) % gridItems.length;
+                count++;
+                
+                if (count >= totalRounds) {
+                    clearInterval(interval);
+                    
+                    // 确定中奖结果
+                    const resultIndex = getRandomPrizeIndex();
+                    gridItems.forEach(item => item.classList.remove('active'));
+                    gridItems[resultIndex].classList.add('active');
+                    
+                    // 记录结果
+                    setTimeout(() => {
+                        const prize = prizes[resultIndex];
+                        recordLotteryResult(prize);
+                        isSpinning = false;
+                        
+                        if (!usedRooms.includes(currentUser.roomNumber)) {
+                            spinBtn.disabled = false;
+                            spinBtn.textContent = '开始抽奖';
+                        }
+                    }, 1000);
+                }
+            }, 150);
+        }
+
+        // 获取带权重的随机奖项
+        function getRandomPrizeIndex() {
+            const totalWeight = prizes.reduce((sum, prize) => sum + prize.probability, 0);
+            let random = Math.random() * totalWeight;
+            
+            for (let i = 0; i < prizes.length; i++) {
+                random -= prizes[i].probability;
+                if (random <= 0) return i;
+            }
+            return prizes.length - 1;
+        }
+
+        // 记录抽奖结果
+        function recordLotteryResult(prize) {
+            console.log('开始记录抽奖结果...');
+            
+            // 检查奖品是否还有剩余
+            if (prize.won >= prize.quantity && prize.name !== '谢谢参与') {
+                const resultIndex = getRandomPrizeIndex();
+                const newPrize = prizes[resultIndex];
+                if (newPrize.won >= newPrize.quantity && newPrize.name !== '谢谢参与') {
+                    prize = prizes.find(p => p.name === '谢谢参与');
+                } else {
+                    prize = newPrize;
+                }
+            }
+
+            const record = {
+                timestamp: new Date().toLocaleString('zh-CN'),
+                roomNumber: currentUser.roomNumber,
+                name: currentUser.name,
+                phone: currentUser.phone,
+                prize: prize.name
+            };
+            
+            console.log('创建记录:', record);
+            
+            // 添加到记录数组
+            lotteryRecords.unshift(record);
+            usedRooms.push(currentUser.roomNumber);
+            
+            // 更新奖品中奖数量
+            if (prize.name !== '谢谢参与') {
+                const prizeIndex = prizes.findIndex(p => p.name === prize.name);
+                if (prizeIndex !== -1) {
+                    prizes[prizeIndex].won += 1;
+                }
+            }
+            
+            // 立即保存到localStorage
+            saveAllData();
+            
+            const resultDiv = document.getElementById('resultMessage');
+            resultDiv.className = prize.name === '谢谢参与' ? 'message error' : 'message success';
+            resultDiv.innerHTML = prize.name === '谢谢参与' 
+                ? `很遗憾，您获得了：${prize.name}`
+                : `恭喜您！获得了：<strong>${prize.name}</strong>`;
+            
+            const spinBtn = document.getElementById('spinBtn');
+            spinBtn.disabled = true;
+            spinBtn.textContent = '已抽奖';
+            
+            console.log('抽奖记录完成，总记录数:', lotteryRecords.length);
+        }
+
+        // 更新管理员统计
+        function updateAdminStats() {
+            const totalUsers = whitelist.length;
+            const participatedUsers = usedRooms.length;
+            const totalPrizes = lotteryRecords.filter(r => r.prize !== '谢谢参与').length;
+            const participationRate = totalUsers > 0 ? Math.round((participatedUsers / totalUsers) * 100) : 0;
+            
+            document.getElementById('totalUsers').textContent = totalUsers;
+            document.getElementById('participatedUsers').textContent = participatedUsers;
+            document.getElementById('totalPrizes').textContent = totalPrizes;
+            document.getElementById('participationRate').textContent = participationRate + '%';
+        }
+
+        // 更新全部记录
+        function updateAllRecords() {
+            const allRecordList = document.getElementById('allRecordList');
+            console.log('更新记录显示，当前记录数:', lotteryRecords.length);
+            
+            if (lotteryRecords.length === 0) {
+                allRecordList.innerHTML = '<div class="record-item">暂无抽奖记录</div>';
+            } else {
+                allRecordList.innerHTML = lotteryRecords.map(record => `
+                    <div class="record-item">
+                        <div class="record-info">
+                            <span>${record.timestamp}</span>
+                            <span>${record.roomNumber}</span>
+                        </div>
+                        <div class="record-info">
+                            <span>${record.name}</span>
+                            <span>${record.phone}</span>
+                        </div>
+                        <div class="record-prize">${record.prize}</div>
                     </div>
-                    <div>数量: ${prize.count}</div>
-                    <button class="secondary remove-prize" data-index="${index}">删除</button>
-                `;
-                prizesList.appendChild(prizeItem);
-            });
-            
-            // 添加删除事件
-            document.querySelectorAll('.remove-prize').forEach(button => {
-                button.addEventListener('click', function() {
-                    const index = parseInt(this.getAttribute('data-index'));
-                    removePrize(index);
-                });
-            });
+                `).join('');
+            }
         }
 
-        // 更新白名单列表
-        function updateWhitelistList() {
-            const whitelist = getData(STORAGE_KEYS.WHITELIST);
-            const whitelistList = document.getElementById('whitelist-list');
+        // 更新白名单显示
+        function updateWhitelistDisplay() {
+            const whitelistTable = document.getElementById('whitelistTable');
+            const whitelistCount = document.getElementById('whitelistCount');
             
-            whitelistList.innerHTML = '';
+            whitelistCount.textContent = whitelist.length;
+            whitelistTable.innerHTML = whitelist.map((user, index) => `
+                <tr>
+                    <td>${user.roomNumber}</td>
+                    <td>${user.name}</td>
+                    <td>${user.phone}</td>
+                    <td>${usedRooms.includes(user.roomNumber) ? '<span style="color: red;">已抽奖</span>' : '<span style="color: green;">未抽奖</span>'}</td>
+                    <td class="action-buttons">
+                        <button class="btn btn-edit" onclick="editUser(${index})">编辑</button>
+                        <button class="btn btn-reset" onclick="resetUserLottery('${user.roomNumber}')">重置抽奖</button>
+                        <button class="btn btn-delete" onclick="deleteUser(${index})">删除</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // 重置用户抽奖状态
+        function resetUserLottery(roomNumber) {
+            if (confirm(`确定要重置房号 ${roomNumber} 的抽奖状态吗？`)) {
+                // 从已抽奖列表中移除
+                const index = usedRooms.indexOf(roomNumber);
+                if (index > -1) {
+                    usedRooms.splice(index, 1);
+                }
+                
+                // 保存数据
+                saveAllData();
+                
+                // 更新显示
+                updateWhitelistDisplay();
+                updateAdminStats();
+                
+                alert('重置成功！该用户可以重新抽奖。');
+            }
+        }
+
+        // 更新奖品显示
+        function updatePrizesDisplay() {
+            const prizesTable = document.getElementById('prizesTable');
+            const prizesCount = document.getElementById('prizesCount');
             
-            if (whitelist.length === 0) {
-                whitelistList.innerHTML = '<p>白名单为空，请添加业主手机号</p>';
+            prizesCount.textContent = prizes.length;
+            prizesTable.innerHTML = prizes.map((prize, index) => `
+                <tr>
+                    <td>${prize.name}</td>
+                    <td>${prize.quantity}</td>
+                    <td>${prize.probability}%</td>
+                    <td>${prize.won}</td>
+                    <td class="action-buttons">
+                        <button class="btn btn-edit" onclick="editPrize(${index})">编辑</button>
+                        <button class="btn btn-delete" onclick="deletePrize(${index})">删除</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // 显示新增用户模态框
+        function showAddUserModal() {
+            editingUserIndex = -1;
+            document.getElementById('userModalTitle').textContent = '新增用户';
+            document.getElementById('modalRoomNumber').value = '';
+            document.getElementById('modalUserName').value = '';
+            document.getElementById('modalUserPhone').value = '';
+            document.getElementById('addUserModal').style.display = 'block';
+        }
+
+        // 编辑用户
+        function editUser(index) {
+            editingUserIndex = index;
+            const user = whitelist[index];
+            document.getElementById('userModalTitle').textContent = '编辑用户';
+            document.getElementById('modalRoomNumber').value = user.roomNumber;
+            document.getElementById('modalUserName').value = user.name;
+            document.getElementById('modalUserPhone').value = user.phone;
+            document.getElementById('addUserModal').style.display = 'block';
+        }
+
+        // 保存用户
+        function saveUser() {
+            const roomNumber = document.getElementById('modalRoomNumber').value.trim();
+            const name = document.getElementById('modalUserName').value.trim();
+            const phone = document.getElementById('modalUserPhone').value.trim();
+            
+            if (!roomNumber || !name || !phone) {
+                alert('请填写完整信息');
                 return;
             }
             
-            whitelist.forEach((item, index) => {
-                const whitelistItem = document.createElement('div');
-                whitelistItem.className = 'whitelist-item';
-                whitelistItem.innerHTML = `
-                    <div class="whitelist-header">
-                        <div class="whitelist-name">${item.name || '未命名'}</div>
-                        <div class="whitelist-phone">${item.phone}</div>
-                    </div>
-                    <button class="secondary remove-whitelist" data-index="${index}">删除</button>
-                `;
-                whitelistList.appendChild(whitelistItem);
-            });
+            if (editingUserIndex === -1) {
+                // 新增用户
+                whitelist.push({ roomNumber, name, phone });
+            } else {
+                // 编辑用户
+                whitelist[editingUserIndex] = { roomNumber, name, phone };
+            }
             
-            // 添加删除事件
-            document.querySelectorAll('.remove-whitelist').forEach(button => {
-                button.addEventListener('click', function() {
-                    const index = parseInt(this.getAttribute('data-index'));
-                    removeWhitelist(index);
-                });
-            });
+            saveAllData();
+            updateWhitelistDisplay();
+            closeModal('addUserModal');
         }
 
-        // 更新抽奖记录列表
-        function updateRecordsList() {
-            const records = getData(STORAGE_KEYS.RECORDS);
-            const recordsList = document.getElementById('records-list');
+        // 删除用户
+        function deleteUser(index) {
+            if (confirm('确定要删除这个用户吗？')) {
+                const user = whitelist[index];
+                // 同时从已抽奖列表中移除
+                const usedIndex = usedRooms.indexOf(user.roomNumber);
+                if (usedIndex > -1) {
+                    usedRooms.splice(usedIndex, 1);
+                }
+                
+                whitelist.splice(index, 1);
+                saveAllData();
+                updateWhitelistDisplay();
+            }
+        }
+
+        // 显示新增奖品模态框
+        function showAddPrizeModal() {
+            editingPrizeIndex = -1;
+            document.getElementById('prizeModalTitle').textContent = '新增奖品';
+            document.getElementById('modalPrizeName').value = '';
+            document.getElementById('modalPrizeQuantity').value = '';
+            document.getElementById('modalPrizeProbability').value = '';
+            document.getElementById('addPrizeModal').style.display = 'block';
+        }
+
+        // 编辑奖品
+        function editPrize(index) {
+            editingPrizeIndex = index;
+            const prize = prizes[index];
+            document.getElementById('prizeModalTitle').textContent = '编辑奖品';
+            document.getElementById('modalPrizeName').value = prize.name;
+            document.getElementById('modalPrizeQuantity').value = prize.quantity;
+            document.getElementById('modalPrizeProbability').value = prize.probability;
+            document.getElementById('addPrizeModal').style.display = 'block';
+        }
+
+        // 保存奖品
+        function savePrize() {
+            const name = document.getElementById('modalPrizeName').value.trim();
+            const quantity = parseInt(document.getElementById('modalPrizeQuantity').value);
+            const probability = parseFloat(document.getElementById('modalPrizeProbability').value);
             
-            recordsList.innerHTML = '';
-            
-            if (records.length === 0) {
-                recordsList.innerHTML = '<p>暂无抽奖记录</p>';
+            if (!name || !quantity || !probability) {
+                alert('请填写完整信息');
                 return;
             }
             
-            records.forEach(record => {
-                const recordItem = document.createElement('div');
-                recordItem.className = 'record-item';
-                recordItem.innerHTML = `
-                    <div><strong>${record.phone}</strong> - ${record.prize || '未中奖'}</div>
-                    <div>时间: ${new Date(record.time).toLocaleString()}</div>
-                `;
-                recordsList.appendChild(recordItem);
-            });
-        }
-
-        // 更新统计数据
-        function updateStats() {
-            const prizes = getData(STORAGE_KEYS.PRIZES);
-            const records = getData(STORAGE_KEYS.RECORDS);
-            
-            const totalPrizes = prizes.reduce((sum, prize) => sum + prize.count, 0);
-            const wonPrizes = records.filter(record => record.prize && record.prize !== '未中奖').length;
-            const remainingPrizes = totalPrizes - wonPrizes;
-            
-            document.getElementById('participant-count').textContent = records.length;
-            document.getElementById('remaining-prizes').textContent = remainingPrizes;
-        }
-
-        // 添加奖品
-        function addPrize() {
-            const name = document.getElementById('prize-name').value.trim();
-            const probability = parseInt(document.getElementById('prize-probability').value);
-            const count = parseInt(document.getElementById('prize-count').value);
-            
-            if (!name) {
-                alert('请输入奖品名称');
-                return;
-            }
-            
-            if (probability < 0 || probability > 100) {
-                alert('概率必须在0-100之间');
-                return;
-            }
-            
-            if (count < 1) {
+            if (quantity < 1) {
                 alert('奖品数量必须大于0');
                 return;
             }
             
-            const prizes = getData(STORAGE_KEYS.PRIZES);
-            prizes.push({ name, probability, count });
-            saveData(STORAGE_KEYS.PRIZES, prizes);
-            
-            // 清空表单
-            document.getElementById('prize-name').value = '';
-            document.getElementById('prize-probability').value = '10';
-            document.getElementById('prize-count').value = '1';
-        }
-
-        // 删除奖品
-        function removePrize(index) {
-            const prizes = getData(STORAGE_KEYS.PRIZES);
-            prizes.splice(index, 1);
-            saveData(STORAGE_KEYS.PRIZES, prizes);
-        }
-
-        // 添加白名单
-        function addWhitelist() {
-            const phone = document.getElementById('whitelist-phone').value.trim();
-            const name = document.getElementById('whitelist-name').value.trim();
-            
-            if (!phone) {
-                alert('请输入手机号');
+            if (probability < 0 || probability > 100) {
+                alert('中奖概率必须在0-100之间');
                 return;
             }
             
-            // 简单的手机号验证
-            if (!/^1[3-9]\d{9}$/.test(phone)) {
-                alert('请输入有效的手机号');
-                return;
-            }
-            
-            const whitelist = getData(STORAGE_KEYS.WHITELIST);
-            
-            // 检查是否已存在
-            if (whitelist.some(item => item.phone === phone)) {
-                alert('该手机号已在白名单中');
-                return;
-            }
-            
-            whitelist.push({ phone, name: name || '业主' });
-            saveData(STORAGE_KEYS.WHITELIST, whitelist);
-            
-            // 清空表单
-            document.getElementById('whitelist-phone').value = '';
-            document.getElementById('whitelist-name').value = '';
-        }
-
-        // 删除白名单
-        function removeWhitelist(index) {
-            const whitelist = getData(STORAGE_KEYS.WHITELIST);
-            whitelist.splice(index, 1);
-            saveData(STORAGE_KEYS.WHITELIST, whitelist);
-        }
-
-        // 执行抽奖
-        function performLottery(phone) {
-            const prizes = getData(STORAGE_KEYS.PRIZES);
-            const records = getData(STORAGE_KEYS.RECORDS);
-            
-            // 检查是否已经抽过奖
-            if (records.some(record => record.phone === phone)) {
-                showResult('您已经参与过抽奖', '每个手机号只能参与一次');
-                return;
-            }
-            
-            // 检查是否有奖品
-            if (prizes.length === 0) {
-                showResult('未中奖', '暂无奖品设置');
-                records.push({
-                    phone,
-                    prize: '未中奖',
-                    time: new Date().toISOString()
-                });
-                saveData(STORAGE_KEYS.RECORDS, records);
-                return;
-            }
-            
-            // 计算总概率
-            const totalProbability = prizes.reduce((sum, prize) => sum + prize.probability, 0);
-            
-            // 生成随机数
-            const random = Math.random() * totalProbability;
-            
-            let current = 0;
-            let selectedPrize = null;
-            
-            // 根据概率选择奖品
-            for (const prize of prizes) {
-                current += prize.probability;
-                if (random <= current && prize.count > 0) {
-                    selectedPrize = prize;
-                    break;
-                }
-            }
-            
-            // 记录结果
-            if (selectedPrize) {
-                // 中奖
-                selectedPrize.count--;
-                saveData(STORAGE_KEYS.PRIZES, prizes);
-                
-                records.push({
-                    phone,
-                    prize: selectedPrize.name,
-                    time: new Date().toISOString()
-                });
-                saveData(STORAGE_KEYS.RECORDS, records);
-                
-                showResult(`恭喜您获得 ${selectedPrize.name}`, '请妥善保管中奖信息，联系管理员兑奖');
+            if (editingPrizeIndex === -1) {
+                // 新增奖品
+                prizes.push({ name, quantity, probability, won: 0 });
             } else {
-                // 未中奖
-                records.push({
-                    phone,
-                    prize: '未中奖',
-                    time: new Date().toISOString()
-                });
-                saveData(STORAGE_KEYS.RECORDS, records);
-                
-                showResult('很遗憾，未中奖', '感谢您的参与，下次好运！');
+                // 编辑奖品
+                prizes[editingPrizeIndex] = { 
+                    name, 
+                    quantity, 
+                    probability, 
+                    won: prizes[editingPrizeIndex].won 
+                };
             }
-        }
-
-        // 显示抽奖结果
-        function showResult(prize, message) {
-            document.getElementById('result-prize').textContent = prize;
-            document.getElementById('result-message').textContent = message;
-            document.getElementById('result-modal').style.display = 'flex';
-        }
-
-        // 清空记录
-        function clearRecords() {
-            if (confirm('确定要清空所有抽奖记录吗？此操作不可恢复。')) {
-                saveData(STORAGE_KEYS.RECORDS, []);
-            }
-        }
-
-        // 分享功能
-        function shareToWechat() {
-            alert('请点击右上角分享到微信或朋友圈');
-        }
-
-        function copyLink() {
-            const url = window.location.href;
-            navigator.clipboard.writeText(url).then(() => {
-                alert('链接已复制到剪贴板，可以分享给好友了');
-            }).catch(() => {
-                // 兼容旧浏览器
-                const textArea = document.createElement('textarea');
-                textArea.value = url;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                alert('链接已复制到剪贴板，可以分享给好友了');
-            });
-        }
-
-        // 转盘动画
-        function spinWheel() {
-            const wheel = document.getElementById('wheel');
-            const rotations = 5 + Math.random() * 5; // 5-10圈
-            const degree = 360 * rotations + Math.floor(Math.random() * 360);
             
-            wheel.style.transform = `rotate(${degree}deg)`;
+            // 确保始终包含谢谢参与
+            ensureThankYouPrize();
             
-            // 动画结束后重置
-            setTimeout(() => {
-                wheel.style.transition = 'none';
-                wheel.style.transform = 'rotate(0deg)';
-                setTimeout(() => {
-                    wheel.style.transition = 'transform 3s cubic-bezier(0.17, 0.67, 0.83, 0.67)';
-                }, 50);
-            }, 3000);
+            saveAllData();
+            updatePrizesDisplay();
+            closeModal('addPrizeModal');
+            
+            // 重新初始化四宫格
+            initLotteryGrid();
         }
 
-        // 用户登录
-        function login() {
-            const idNumber = document.getElementById('id-number').value.trim();
-            const selectedRole = document.querySelector('.role-option.active').getAttribute('data-role');
-            
-            if (!idNumber) {
-                alert('请输入身份证号后6位');
+        // 删除奖品 - 防止删除谢谢参与
+        function deletePrize(index) {
+            if (prizes[index].name === '谢谢参与') {
+                alert('谢谢参与奖项不能删除');
                 return;
             }
             
-            if (idNumber.length !== 6) {
-                alert('身份证号后6位必须是6位字符');
-                return;
+            if (confirm('确定要删除这个奖品吗？')) {
+                prizes.splice(index, 1);
+                saveAllData();
+                updatePrizesDisplay();
+                initLotteryGrid();
             }
+        }
+
+        // 关闭模态框
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // 处理Excel文件导入
+        function handleFileImport(files) {
+            if (files.length === 0) return;
             
-            let userRole = USER_ROLES.EMPLOYEE;
+            const file = files[0];
+            const reader = new FileReader();
             
-            // 验证管理员身份
-            if (selectedRole === USER_ROLES.ADMIN) {
-                if (ADMIN_CODES.includes(idNumber.toLowerCase())) {
-                    userRole = USER_ROLES.ADMIN;
-                } else {
-                    alert('管理员身份验证失败，请检查身份证号后6位');
-                    return;
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                    
+                    // 验证数据格式
+                    const validData = jsonData.filter(row => 
+                        row.房号 && row.姓名 && row.手机号
+                    );
+                    
+                    if (validData.length === 0) {
+                        alert('Excel文件中未找到有效的白名单数据（需要包含房号、姓名、手机号列）');
+                        return;
+                    }
+                    
+                    // 转换数据格式
+                    const newWhitelist = validData.map(row => ({
+                        roomNumber: row.房号.toString(),
+                        name: row.姓名.toString(),
+                        phone: row.手机号.toString()
+                    }));
+                    
+                    whitelist = newWhitelist;
+                    saveAllData();
+                    
+                    updateWhitelistDisplay();
+                    updateAdminStats();
+                    
+                    alert(`成功导入 ${newWhitelist.length} 条白名单数据`);
+                    
+                } catch (error) {
+                    alert('文件读取失败，请检查文件格式');
+                    console.error(error);
                 }
-            }
-            
-            // 保存用户信息
-            const userInfo = {
-                role: userRole,
-                loginTime: new Date().toISOString()
             };
-            localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userInfo));
             
-            // 切换到应用页面
-            showAppPage(userRole);
+            reader.readAsArrayBuffer(file);
         }
 
-        // 显示应用页面
-        function showAppPage(role) {
-            document.getElementById('login-page').style.display = 'none';
-            document.getElementById('app-page').style.display = 'block';
+        // 修改管理员密码
+        function changePassword() {
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
             
-            // 更新用户角色显示
-            const roleDisplay = role === USER_ROLES.ADMIN ? '管理员' : '普通员工';
-            document.getElementById('user-role-display').textContent = roleDisplay;
-            
-            // 根据角色显示/隐藏管理员功能
-            const adminTabs = document.querySelectorAll('.tab.admin-only');
-            if (role === USER_ROLES.ADMIN) {
-                adminTabs.forEach(tab => tab.style.display = 'flex');
-            } else {
-                adminTabs.forEach(tab => tab.style.display = 'none');
+            if (!newPassword || !confirmPassword) {
+                alert('请填写完整信息');
+                return;
             }
             
-            initData();
+            if (newPassword !== confirmPassword) {
+                alert('两次输入的密码不一致');
+                return;
+            }
+            
+            adminPassword = newPassword;
+            localStorage.setItem(STORAGE_KEYS.ADMIN_PASSWORD, adminPassword);
+            alert('密码修改成功');
+            
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
         }
 
-        // 用户退出登录
+        // 清空所有数据
+        function clearAllData() {
+            if (confirm('确定要清空所有数据吗？此操作不可恢复！')) {
+                lotteryRecords = [];
+                usedRooms = [];
+                saveAllData();
+                alert('数据已清空');
+                updateAdminStats();
+                updateAllRecords();
+            }
+        }
+
+        // 导出抽奖记录
+        function exportRecords() {
+            const worksheet = XLSX.utils.json_to_sheet(lotteryRecords.map(record => ({
+                '时间': record.timestamp,
+                '房号': record.roomNumber,
+                '姓名': record.name,
+                '手机号': record.phone,
+                '奖项': record.prize
+            })));
+            
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, '抽奖记录');
+            XLSX.writeFile(workbook, `抽奖记录_${new Date().toLocaleDateString()}.xlsx`);
+        }
+
+        // 导出白名单
+        function exportWhitelist() {
+            const worksheet = XLSX.utils.json_to_sheet(whitelist.map(user => ({
+                '房号': user.roomNumber,
+                '姓名': user.name,
+                '手机号': user.phone,
+                '抽奖状态': usedRooms.includes(user.roomNumber) ? '已抽奖' : '未抽奖'
+            })));
+            
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, '白名单');
+            XLSX.writeFile(workbook, `白名单_${new Date().toLocaleDateString()}.xlsx`);
+        }
+
+        // 导出完整数据
+        function exportAllData() {
+            const workbook = XLSX.utils.book_new();
+            
+            // 白名单sheet
+            const whitelistSheet = XLSX.utils.json_to_sheet(whitelist.map(user => ({
+                '房号': user.roomNumber,
+                '姓名': user.name,
+                '手机号': user.phone,
+                '抽奖状态': usedRooms.includes(user.roomNumber) ? '已抽奖' : '未抽奖'
+            })));
+            XLSX.utils.book_append_sheet(workbook, whitelistSheet, '白名单');
+            
+            // 抽奖记录sheet
+            const recordsSheet = XLSX.utils.json_to_sheet(lotteryRecords.map(record => ({
+                '时间': record.timestamp,
+                '房号': record.roomNumber,
+                '姓名': record.name,
+                '手机号': record.phone,
+                '奖项': record.prize
+            })));
+            XLSX.utils.book_append_sheet(workbook, recordsSheet, '抽奖记录');
+            
+            // 统计数据sheet
+            const statsData = [
+                { '统计项': '总用户数', '数值': whitelist.length },
+                { '统计项': '已参与用户', '数值': usedRooms.length },
+                { '统计项': '总中奖数', '数值': lotteryRecords.filter(r => r.prize !== '谢谢参与').length },
+                { '统计项': '参与率', '数值': whitelist.length > 0 ? Math.round((usedRooms.length / whitelist.length) * 100) + '%' : '0%' }
+            ];
+            const statsSheet = XLSX.utils.json_to_sheet(statsData);
+            XLSX.utils.book_append_sheet(workbook, statsSheet, '统计数据');
+
+            // 奖品设置sheet
+            const prizesSheet = XLSX.utils.json_to_sheet(prizes.map(prize => ({
+                '奖品名称': prize.name,
+                '奖品数量': prize.quantity,
+                '中奖概率': prize.probability + '%',
+                '已中奖数': prize.won
+            })));
+            XLSX.utils.book_append_sheet(workbook, prizesSheet, '奖品设置');
+            
+            XLSX.writeFile(workbook, `抽奖系统完整数据_${new Date().toLocaleDateString()}.xlsx`);
+        }
+
+        // 退出登录 - 不清理记录
         function logout() {
-            localStorage.removeItem(STORAGE_KEYS.USER);
-            document.getElementById('app-page').style.display = 'none';
-            document.getElementById('login-page').style.display = 'block';
-            document.getElementById('id-number').value = '';
+            currentUser = null;
+            localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+            document.getElementById('adminSection').classList.remove('active');
+            document.getElementById('loginSection').classList.add('active');
+            
+            // 只清空输入框，不清理记录
+            document.getElementById('roomNumber').value = '';
+            document.getElementById('adminAccount').value = '';
+            document.getElementById('adminPassword').value = '';
         }
 
-        // 检查用户是否已登录
-        function checkLoginStatus() {
-            const userInfo = localStorage.getItem(STORAGE_KEYS.USER);
-            if (userInfo) {
-                const user = JSON.parse(userInfo);
-                showAppPage(user.role);
-            }
-        }
-
-        // 切换标签页
-        function switchTab(tabName) {
-            // 隐藏所有标签内容
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            
-            // 显示选中的标签内容
-            document.getElementById(tabName).classList.add('active');
-            
-            // 更新标签状态
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // 激活当前标签
-            document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add('active');
-        }
-
-        // 初始化
+        // 页面加载初始化
         document.addEventListener('DOMContentLoaded', function() {
-            // 检查登录状态
-            checkLoginStatus();
+            // 初始化数据
+            initializeData();
             
-            // 角色选择
-            document.querySelectorAll('.role-option').forEach(option => {
-                option.addEventListener('click', function() {
-                    document.querySelectorAll('.role-option').forEach(o => o.classList.remove('active'));
-                    this.classList.add('active');
-                });
-            });
+            // 确保数据完整性
+            ensureThankYouPrize();
             
-            // 登录按钮
-            document.getElementById('login-btn').addEventListener('click', login);
+            initLotteryGrid();
             
-            // 退出登录按钮
-            document.getElementById('logout-btn').addEventListener('click', logout);
-            
-            // 标签切换 - 修复后的代码
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.addEventListener('click', function() {
-                    const tabName = this.getAttribute('data-tab');
-                    switchTab(tabName);
-                });
-            });
-            
-            // 添加奖品
-            document.getElementById('add-prize').addEventListener('click', addPrize);
-            
-            // 添加白名单
-            document.getElementById('add-whitelist').addEventListener('click', addWhitelist);
-            
-            // 开始抽奖
-            document.getElementById('start-lottery').addEventListener('click', function() {
-                const phone = document.getElementById('user-phone').value.trim();
-                
-                if (!phone) {
-                    alert('请输入手机号');
-                    return;
-                }
-                
-                // 检查白名单
-                const whitelist = getData(STORAGE_KEYS.WHITELIST);
-                if (whitelist.length > 0 && !whitelist.some(item => item.phone === phone)) {
-                    alert('您的手机号不在白名单中，无法参与抽奖');
-                    return;
-                }
-                
-                // 执行抽奖
-                spinWheel();
-                setTimeout(() => {
-                    performLottery(phone);
-                }, 3000);
-            });
-            
-            // 清空记录
-            document.getElementById('clear-records').addEventListener('click', clearRecords);
-            
-            // 分享功能
-            document.getElementById('share-wechat').addEventListener('click', shareToWechat);
-            document.getElementById('copy-link').addEventListener('click', copyLink);
-            
-            // 关闭弹窗
-            document.getElementById('close-modal').addEventListener('click', function() {
-                document.getElementById('result-modal').style.display = 'none';
+            // 添加页面刷新前的保存
+            window.addEventListener('beforeunload', function() {
+                saveAllData();
             });
         });
     </script>
